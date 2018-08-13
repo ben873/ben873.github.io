@@ -388,12 +388,12 @@ a{
 }
 
 .media_content_box_center{
-	width: 90%;
+	width: 100%;
 	display: inline-block;
-	padding-left: 5%;
 	padding-top: 5%;
 	vertical-align: top;
 	text-align: center;
+	
 
 }
 
