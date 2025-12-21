@@ -227,7 +227,7 @@ window.BDS_WORK_ITEMS = [
       }
     ]
   },
-  {
+    {
     "basename": "Burning_Man_The_Musical_2021_Dialogue_Editor_Feature",
     "title": "Burning Man The Musical",
     "year": "2021",
@@ -238,7 +238,20 @@ window.BDS_WORK_ITEMS = [
         "label": "Dialogue Editor"
       }
     ]
+  },
+  {
+    "basename": "treasure_of_the_lost_reel_2025_re-recording-mixer_feature",
+    "title": "Treasure Of The Lost Reel",
+    "year": "2025",
+    "type": "Feature",
+    "roles": [
+      {
+        "slug": "re-recording-mixer",
+        "label": "Re-Recording Mixer"
+      }
+    ]
   }
+
 
 ];
 // ---- New image-backed items (added 2025-12-20) ----
@@ -324,13 +337,6 @@ window.BDS_WORK_ITEMS.push(
 
 // ---- List-only Re-Recording Mixer credits (no images) ----
 window.BDS_WORK_ITEMS.push(
-  {
-    basename: null,
-    title: "Legend of The Lost Reel",
-    year: "2025",
-    type: "Feature",
-    roles: [{ slug: "re-recording-mixer", label: "Re-Recording Mixer" }]
-  },
   {
     basename: null,
     title: "The Endless Love of Salome",
