@@ -1,3 +1,31 @@
+/* =========================
+   HELIXA FONT LOAD (TTF/OTF)
+   ========================= */
+
+@font-face {
+  font-family: "Helixa";
+  src: url("../fonts/Helixa-Font/Helixa-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Helixa";
+  src: url("../fonts/Helixa-Font/Helixa-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Helixa";
+  src: url("../fonts/Helixa-Font/Helixa-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* BODY */
 
 body{
@@ -5,6 +33,8 @@ body{
 	font-weight: normal;
 	line-height: 1.3;
 	font-family: serif;
+	background-color: #2b2b2b;
+  color: #f2f2f2;
 
 }
 
@@ -40,6 +70,42 @@ a{
 	margin-left: auto;
 	margin-right: auto;
 }
+
+/* =========================
+   HELIXA — GLOBAL TEXT
+   ========================= */
+
+body,
+body.interior,
+body.interior p,
+body.interior li,
+body.interior a,
+body.interior #navbar a,
+body.interior .dropdown-content a,
+body.interior .content_box,
+body.interior .content_box_right,
+body.interior .main_content_box_center {
+  font-family: "Helixa", -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+
+/* =========================
+   KEEP HEADINGS UNCHANGED
+   ========================= */
+
+h1,
+h2,
+.sub_title h2,
+#title h1,
+#title2 h2 {
+  font-family: sans-serif;
+}
+p,
+li {
+  line-height: 1.55;
+}
+
 
 
 /* RESPONSIVE */
@@ -175,13 +241,6 @@ a{
 
 
 
-
-
-
-
-
-
-
 #header{
 	width: 100%;
 	display: block;
@@ -190,6 +249,13 @@ a{
 	position: relative;
 
 }
+
+/* Interior pages: header needs height so absolute navbar isn't covered */
+body.interior #header{
+  position: relative;
+  min-height: 70px;   /* tweak: 60–90px */
+}
+
 
 
 
@@ -219,13 +285,18 @@ a{
 
 
 
-#navbar{
-
-	position: absolute;
-	top: 1%;
-	right: 5%;
-
+#navbar {
+  position: absolute;
+  top: 20px;     /* lock it */
+  right: 5%;
 }
+
+#navbar,
+.dropdown{
+  z-index: 9999;
+}
+
+
 
 #navmenu{
 
@@ -261,7 +332,7 @@ a{
 
 .sub_title{
 	text-align: center;
-	padding-top: 5%;
+	padding-top: 2%;
 	font-family: sans-serif;
 }
 
@@ -286,6 +357,18 @@ a{
 
 }
 
+.grey_box{
+	width: 100%;
+	display: block;
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #3a3a3a;
+	color: #ffffff;
+	border-radius: 15px;
+	
+
+}
 
 
 .white_box{
@@ -294,8 +377,8 @@ a{
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
-	background-color: #ffffff;
-	color: #000000;
+	background-color: #2b2b2b;
+	color: #f2f2f2;
 }
 
 
@@ -397,6 +480,16 @@ a{
 
 }
 
+.main_content_box_center{
+	width: 90%;
+	display: inline-block;
+	padding: 5%;
+	vertical-align: top;
+	text-align: left;
+	
+
+}
+
 
 .content_box_credits{
 	width: 40%;
@@ -423,6 +516,30 @@ a{
 	vertical-align: top;
 
 }
+
+.float-right-image {
+  float: right;
+  width: 40%;          /* adjust to taste */
+  margin: 0 0 1em 1.5em; /* space between image and text */
+  border-radius: 12px;  /* matches your site style */
+}
+
+/* Force the second image to start below any previous floats */
+.float-break{
+  clear: right;     /* key line */
+  margin-top: 1em;  /* optional spacing */
+}
+
+.main-image {
+  width: 100%;          /* adjust to taste */
+  
+  border-radius: 12px;  /* matches your site style */
+}
+
+.clear {
+  clear: both;
+}
+
 
 
 
@@ -454,6 +571,14 @@ a{
 	background-repeat: no-repeat;
 	border-radius: 15px 15px 0px 0px;
 }
+
+#menubutton, #menubutton * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
 /*.dropdown-content a:hover {background-color: #f535e0}
 
 .dropdown:hover {
@@ -480,45 +605,65 @@ a{
 
 
 
-.dropdown {
-    position: absolute;
-	top: 5%;
-	right: 5%;
-
+.dropdown{
+  position: absolute;
+  top: 20px;
+  right: 5%;
+  z-index: 9999;
 }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: #5f83b5;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    cursor: none;
-	font-family: sans-serif;
-	color: #ffffff;
-	border-radius: 15px 0px 15px 15px;
+.dropdown-content{
+  display: none;
+  position: absolute;
+  right: 0;
+  min-width: 160px;
 
+  background-color: #404040;
+  border-radius: 15px 0px 15px 15px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+
+  font-family: sans-serif;
+  cursor: none;
 }
 
-.dropdown-content a {
-    color: #ffffff;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-
+/* default dropdown link style (WHITE text) */
+.dropdown-content a{
+  display: block;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #ffffff;
 }
 
-.dropdown.touch {
-  position: relative;
-  display: inline-block;
-  float:right;
-  z-index: 9;
+/* show menu when your JS adds .show */
+.dropdown-content.show{
+  display: block;
+}
+
+/* hold mode: your JS adds .touch to .dropdown */
+.dropdown.touch .dropdown-content{
+  display: block;
+}
+
+/* highlight for mouse hover + hold-swipe selection (JS adds .hoveron to <a>) */
+.dropdown-content a:hover,
+.dropdown-content a.hoveron,
+.dropdown-content a:active,
+.dropdown-content a:focus,
+.dropdown-content a:focus-visible{
+  background-color: #ffffff;
+  color: #000000;
+  outline: none;
+}
+
+
+/* Hold mode should NOT change dropdown positioning */
+.dropdown.touch{
+  z-index: 9999; /* just ensure it's on top */
 }
 
 .dropdown.touch .dropdown-content {
     display: block;
-    z-index: 9;
+    z-index: 9999;
     min-width: 160px;
     right: 0;
     cursor: none;
@@ -530,6 +675,7 @@ a{
 .dropdown-content .hoveron {
 
     background-color: #ffffff;
+    color: #ffffff;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 	
 
@@ -539,7 +685,7 @@ a{
     padding: 12px 16px;
     text-decoration: none;
     display: block;
-	color: #ffffff;
+	color: #000000;
 }
 
 .show {
@@ -548,3 +694,211 @@ a{
 .dropbtn.touch{
 
 }
+
+
+/* --- Added for multi-page restructure (scoped, preserves existing look) --- */
+/* --- WORK GRID (responsive, edge-to-edge thumbnails) --- */
+.work-grid{
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0;
+}
+
+.work-tile{
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border-radius: 0;
+}
+
+.thumb-link{
+  display: block;
+}
+
+.work-tile img{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Multi-role overlay (only appears when a project has multiple roles) */
+.role-overlay{
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none; /* allow primary click through except on chips */
+}
+
+.role-overlay .role-chip{
+  pointer-events: auto;
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85em;
+}
+
+.role-overlay .role-chip:hover{
+  background: rgba(0,0,0,0.75);
+}
+
+/* Toggle menu mode: normal cursor + clickable feel */
+.dropdown-content.toggle{ cursor: auto; }
+.dropdown-content.toggle a{ cursor: pointer; }
+
+/* =========================================================
+   NAVBAR COLOR LOGIC (HOME vs INTERIOR PAGES)
+   ========================================================= */
+
+/* Base navbar link behavior */
+#navbar a,
+.dropdown-content a {
+  text-decoration: none;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+/* -------------------------------
+   HOME PAGE (over hero image)
+   ------------------------------- */
+body.home #navbar a,
+body.home .dropdown-content a {
+  color: #000000;
+}
+
+body.home #navbar a:hover,
+body.home .dropdown-content a:hover {
+  color: #222222;
+}
+
+/* -------------------------------
+   INTERIOR PAGES (dark background)
+   ------------------------------- */
+body.interior #navbar a,
+body.interior .dropdown-content a {
+  color: #ffffff;
+}
+
+body.interior #navbar a:hover,
+body.interior .dropdown-content a:hover {
+  color: #000000;
+}
+
+/* Optional: improve dropdown hover contrast on interior pages */
+body.interior .dropdown-content a:hover {
+  background-color: #ffffff;
+}
+
+/* Lock Explore links to bottom of grey box */
+.grey_box .explore-links{
+  position: absolute;
+  bottom: 1.5em;      /* distance from bottom */
+  left: 5%;
+  right: 5%;
+  text-align: left;
+}
+
+/* --- Dropdown item highlight (works for both hover + JS-added .hoveron) --- */
+.dropdown-content a:hover,
+.dropdown-content a.hoveron {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Make sure hover class actually applies even if other rules set link color */
+.dropdown-content a.hoveron {
+  color: #000000 !important;
+}
+
+/* Ensure the image inside the button never steals the press */
+#menubutton img {
+  pointer-events: none;
+}
+/* Override #header a:hover for dropdown menu items (regular/toggle mode) */
+#header .dropdown-content a:hover,
+#header .dropdown-content a.hoveron {
+  background-color: #ffffff;
+  color: #000000 !important;
+}
+
+/* BULLETPROOF dropdown hover (mouse) + hold highlight */
+#drophover a:hover,
+#drophover a.hoveron {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Touch-friendly highlight for toggle mode (phones/tablets) */
+#drophover a:active,
+#drophover a:focus,
+#drophover a:focus-visible {
+  background-color: #ffffff !important;
+  color: #ffffff !important;
+  outline: none;
+}
+
+#navbar a,
+.dropdown-content a {
+  font-weight: 600; /* or 700 if you want heavier */
+}
+/* =========================
+   DROPDOWN MENU TEXT (OVERRIDE #header a)
+   ========================= */
+
+/* Default dropdown link text = WHITE */
+#header .dropdown-content a{
+  color: #ffffff !important;
+}
+
+/* Hover + hold-swipe highlight = white bg + black text */
+#header .dropdown-content a:hover,
+#header .dropdown-content a.hoveron{
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+
+.contact-form{
+  width: 90%;
+  margin: 0 auto;
+  font-family: "Helixa", sans-serif;
+}
+
+.contact-form label{
+  display: block;
+  margin: 14px 0;
+}
+
+.contact-form input,
+.contact-form textarea{
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: #404040;
+  color: #ffffff;
+}
+
+.contact-form button{
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 0;
+  background: #ffffff;
+  color: #000000;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.contact-form button:hover{
+  background: #e6e6e6;
+}
+
