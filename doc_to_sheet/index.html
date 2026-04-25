@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doc to Sheet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f3ee;--surface:#fff;--border:#d8d6ce;--text:#1a1a1a;--dim:#888;
+  --accent:#2563eb;--accent-light:#dbeafe;
+  --omit-bg:#fff0f0;--omit-fg:#b91c1c;
+  --row-even:#eef6ff;--row-odd:#fff;
+  --sel:rgba(37,99,235,.32);
+  --override:#f97316;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* ── header ── */
+header{display:flex;align-items:center;gap:10px;padding:7px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+header h1{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.hbtn{padding:4px 11px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text)}
+.hbtn:hover{background:var(--bg)}
+.hsep{flex:1}
+#mode-badge{font-size:11px;padding:2px 7px;border-radius:10px;background:var(--accent-light);color:var(--accent);border:1px solid #93c5fd;display:none}
+
+/* ── paste strip ── */
+#paste-strip{display:none;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;align-items:flex-end}
+#paste-strip.open{display:flex}
+#paste-ta{flex:1;height:80px;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font:13px/1.5 'Courier New',monospace;resize:vertical;background:var(--bg)}
+.strip-btn{padding:5px 12px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer}
+.strip-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.strip-btn.primary:hover{background:#1d4ed8}
+
+/* ── main ── */
+main{display:flex;flex:1;overflow:hidden}
+
+/* ── doc panel ── */
+#doc-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
+.panel-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);padding:6px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+#doc-view{
+  flex:1;overflow-y:auto;padding:16px 18px;
+  font:14px/1.75 'Courier New',monospace;
+  white-space:pre-wrap;word-break:break-word;
+  user-select:none;
+  /* cursor set dynamically by JS */
+  background:var(--surface);
+  word-spacing:5px;   /* widens whitespace gaps for easier targeting */
+}
+#sel-info{font-size:11px;color:var(--dim);padding:3px 12px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;min-height:22px}
+
+/* doc span types */
+.s-omit{text-decoration:line-through;opacity:.38;background:var(--omit-bg);color:var(--omit-fg)}
+.s-row-even{background:var(--row-even);border-bottom:1px solid #bfdbfe}
+.s-row-odd{background:var(--row-odd);border-bottom:1px dashed #ddd}
+.s-sel{background:var(--sel)}
+.s-sel.s-omit{background:#fca5a5}
+
+/* ── action bar ── */
+#action-bar{width:152px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;padding:14px 10px;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto}
+#action-bar .sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-top:4px}
+.abtn{padding:7px 9px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--surface);cursor:pointer;text-align:left;line-height:1.35;color:var(--text);transition:background .1s}
+.abtn:hover:not(:disabled){background:var(--bg)}
+.abtn:disabled{opacity:.35;cursor:not-allowed}
+.abtn small{display:block;font-size:10px;color:var(--dim);margin-top:1px}
+.abtn.omit:hover:not(:disabled){background:var(--omit-bg);border-color:var(--omit-fg)}
+.abtn.divide:hover:not(:disabled){background:var(--accent-light);border-color:var(--accent)}
+.asep{height:1px;background:var(--border);margin:2px 0}
+
+/* ── sheet panel ── */
+#sheet-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#sheet-view{flex:1;overflow:auto;background:var(--surface)}
+#sheet-table{border-collapse:collapse;min-width:100%;font-size:12.5px}
+#sheet-table th{background:#f1f5f9;border:1px solid var(--border);padding:3px 8px;font-size:10px;font-weight:700;color:var(--dim);text-align:center;min-width:72px;position:sticky;top:0;z-index:1}
+#sheet-table td{border:1px solid #e8e6df;padding:4px 8px;white-space:pre-wrap;max-width:280px;vertical-align:top}
+#sheet-table tr:nth-child(even) td{background:var(--row-even)}
+.sheet-foot{display:flex;align-items:center;gap:8px;padding:7px 12px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.exbtn{padding:4px 11px;font-size:12px;border-radius:4px;cursor:pointer;font-weight:500}
+.exbtn.primary{background:var(--accent);color:#fff;border:1px solid var(--accent)}
+.exbtn.primary:hover{background:#1d4ed8}
+.exbtn.sec2{background:var(--surface);color:var(--accent);border:1px solid var(--accent)}
+.exbtn.sec2:hover{background:var(--accent-light)}
+#sheet-stats{font-size:11px;color:var(--dim);margin-left:auto}
+
+/* ── overlay ── */
+#overlay-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+#overlay-back.open{display:flex}
+#overlay{background:var(--surface);border-radius:8px;box-shadow:0 24px 64px rgba(0,0,0,.32);width:92vw;max-width:960px;height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.ov-head{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ov-head h2{font-size:14px;font-weight:700;flex:1}
+.ov-ctrl{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;background:#fafaf8}
+.ov-ctrl label{font-size:12px;color:var(--dim)}
+.ov-ctrl input{width:70px;padding:3px 7px;border:1px solid var(--border);border-radius:4px;font-size:12px}
+.obtn{padding:4px 9px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer}
+.obtn:hover{background:var(--bg)}
+.obtn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.obtn.primary:hover{background:#1d4ed8}
+#ov-hint{font-size:12px;color:var(--accent);font-weight:500}
+
+/* ── divide canvas ── */
+#cv-wrap{flex:1;overflow:auto;position:relative;background:#fafaf8}
+
+/* Global-divider rail */
+#cv-rail{
+  position:sticky;top:0;z-index:30;
+  height:24px;background:#e8e5dd;border-bottom:2px solid var(--border);
+  user-select:none;
+}
+#cv-rail-label{font-size:10px;color:var(--dim);line-height:24px;padding:0 8px;pointer-events:none;position:absolute;top:0;left:0}
+.dv-global-handle{
+  position:absolute;top:0;height:100%;width:20px;transform:translateX(-50%);
+  cursor:col-resize;display:flex;align-items:center;justify-content:center;
+  color:var(--accent);font-size:13px;z-index:31;
+}
+.dv-global-handle:hover{color:#1d4ed8}
+.dv-global-handle::after{
+  content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+  width:3px;height:6px;background:var(--accent);border-radius:0 0 2px 2px;
+}
+
+#cv{
+  position:relative;
+  padding:0 24px 20px;
+  font:15px/2.1 'Courier New',monospace;
+  white-space:pre;
+  min-height:100%;
+  cursor:default;
+  word-spacing:12px;
+  tab-size:4;
+}
+/* Rows 2+ gap spans: suppress col-resize so only row 1 gaps feel clickable */
+.cv-row:not([data-ridx="0"]) .cv-gap{cursor:default}
+#cv-wrap.is-grabbing,#cv-wrap.is-grabbing *{cursor:grabbing!important}
+.cv-row{position:relative;display:block}
+.cv-row.even{background:var(--row-even)}
+.cv-row.odd{background:var(--row-odd)}
+/* tail row: slightly different left border to show it's unfinalized */
+.cv-row.tail{border-left:3px solid #f59e0b;padding-left:4px}
+.cv-row.click-target{cursor:pointer}
+.cv-row.click-target:hover{outline:2px dashed var(--accent);outline-offset:-2px}
+.row-start-dot{
+  position:absolute;left:-16px;top:50%;transform:translateY(-50%);
+  width:10px;height:10px;border-radius:50%;background:var(--accent);pointer-events:none;
+}
+/* Tail row dot sits at top-left to mark where the row starts, not the vertical center */
+.cv-row.tail .row-start-dot{top:6px;transform:none}
+/* Disable divider drag handles while a row is being text-edited */
+.is-row-editing .dv-row-line,.is-row-editing .dv-global-handle{pointer-events:none !important;cursor:default}
+
+/* Per-row divider lines */
+.dv-row-line{position:absolute;top:0;bottom:0;width:3px;cursor:col-resize;z-index:10;touch-action:none}
+.dv-row-line::before{content:'';position:absolute;left:-5px;right:-5px;top:0;bottom:0}
+.dv-row-line.shared{background:var(--accent);opacity:.75}
+.dv-row-line.override{background:var(--override)}
+.dv-row-line:hover.shared{opacity:1}
+.dv-row-line:hover.override{background:#ea6c10}
+
+/* Cluster / gap spans in divide editor */
+.cv-cluster{display:inline}
+.cv-cluster.draggable{cursor:grab;border-radius:2px}
+.cv-cluster.draggable:hover{background:rgba(245,158,11,.13)}
+.cv-cluster.drag-placeholder{opacity:.22;background:repeating-linear-gradient(90deg,rgba(245,158,11,.3) 0 3px,transparent 3px 6px)}
+.cv-gap{display:inline;cursor:col-resize;border-radius:2px;transition:background .1s}
+.cv-gap.drop-zone{background:rgba(37,99,235,.15);outline:1px dashed rgba(37,99,235,.5);outline-offset:1px}
+.cv-gap.has-divider{background:rgba(37,99,235,.08)}
+.cv-row.word-order-override{border-right:3px solid var(--override)}
+.cv-row.no-gaps{border-left:3px solid #f59e0b}
+/* Debug: gap zone highlight */
+.gap-zones-on .cv-gap{background:rgba(37,99,235,.18)!important;outline:1px solid rgba(37,99,235,.35);outline-offset:0}
+/* Close-tail affordance */
+#cv-close-tail{padding:6px 0 10px 28px;font-size:12px;color:var(--dim);cursor:pointer;user-select:none;display:none}
+#cv-close-tail:hover{color:var(--accent)}
+#cv-close-tail.visible{display:block}
+#cv-close-tail button{padding:3px 9px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--surface);cursor:pointer;color:var(--text)}
+#cv-close-tail button:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+/* Phase status badge */
+#ov-phase-badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid transparent;white-space:nowrap}
+#ov-phase-badge.p1{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+#ov-phase-badge.p2{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+/* Editor omit selection */
+.cv-cluster.editor-sel{background:rgba(185,28,28,.18)!important;outline:1px dashed #dc2626;outline-offset:1px;border-radius:2px}
+/* Row-start candidate word highlight */
+.cv-cluster.rs-candidate{background:rgba(37,99,235,.18)!important;outline:1px dashed var(--accent);outline-offset:1px;border-radius:2px}
+/* Row text edit mode */
+.cv-row.editing{outline:2px solid var(--accent);outline-offset:-2px;background:#fffef8;z-index:2;cursor:text}
+.cv-row.editing .row-start-dot{display:none}
+.row-edit-ta{display:block;width:100%;border:none;background:transparent;font:15px/2.1 'Courier New',monospace;word-spacing:12px;resize:none;padding:0;outline:none;cursor:text;white-space:pre-wrap;word-break:break-word;overflow:hidden;color:var(--text)}
+/* Row edit bar */
+#row-edit-bar{display:none;padding:5px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;align-items:center;gap:8px;flex-wrap:wrap}
+#row-edit-bar.open{display:flex}
+#row-edit-info{font-size:12px;color:var(--dim);flex:1}
+/* Preview mode */
+.cv-row.preview-source{outline:2px solid var(--accent);outline-offset:-2px}
+.cv-row.preview-nochange{opacity:.42}
+.ws-ins{background:rgba(37,99,235,.22);border-radius:2px;outline:1px solid rgba(37,99,235,.38);outline-offset:0}
+.ws-del{text-decoration:line-through;opacity:.55;background:#fee2e2;border-radius:2px}
+#row-preview-btns{display:none;align-items:center;gap:8px}
+#row-preview-btns.open{display:flex}
+#row-normal-btns{display:flex;align-items:center;gap:8px}
+
+.dv-row-knob{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  width:14px;height:14px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:#fff;pointer-events:none;
+}
+.shared .dv-row-knob{background:var(--accent)}
+.override .dv-row-knob{background:var(--override)}
+
+/* ── footer ── */
+footer{padding:5px 14px;font-size:11px;color:var(--dim);border-top:1px solid var(--border);background:var(--surface);text-align:center;flex-shrink:0}
+
+/* dragover */
+#doc-panel.dragover #doc-view{outline:3px dashed var(--accent);outline-offset:-3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header>
+  <h1>Doc to Sheet</h1>
+  <button class="hbtn" id="btn-open">Open File</button>
+  <input type="file" id="file-inp" accept=".txt,.text,.md" style="display:none">
+  <button class="hbtn" id="btn-paste-toggle">Paste Text</button>
+  <button class="hbtn" id="btn-clear">Clear</button>
+  <span class="hsep"></span>
+  <span id="mode-badge"></span>
+</header>
+
+<div id="paste-strip">
+  <textarea id="paste-ta" placeholder="Paste document text here…"></textarea>
+  <button class="strip-btn primary" id="btn-paste-load">Load</button>
+  <button class="strip-btn" id="btn-paste-cancel">Cancel</button>
+</div>
+
+<main>
+  <div id="doc-panel">
+    <div class="panel-head">Document</div>
+    <div id="doc-view"></div>
+    <div id="sel-info">No selection</div>
+  </div>
+
+  <div id="action-bar">
+    <div class="sec">Selection</div>
+    <button class="abtn omit" id="btn-omit" disabled>Omit<small>O / ⌘O</small></button>
+    <button class="abtn omit" id="btn-uomit" disabled>Un-omit<small>U / ⌘U</small></button>
+    <div class="asep"></div>
+    <div class="sec">Divide</div>
+    <button class="abtn divide" id="btn-div1" disabled>Single Row → Cols<small>1 / ⌘1</small></button>
+    <button class="abtn divide" id="btn-div2" disabled>Multi Rows → Cols<small>2 / ⌘2</small></button>
+    <div class="asep"></div>
+    <div class="sec">History</div>
+    <button class="abtn" id="btn-undo" disabled>Undo<small>⌘Z</small></button>
+    <button class="abtn" id="btn-redo" disabled>Redo<small>⌘⇧Z</small></button>
+    <div class="asep"></div>
+    <div class="sec">Rows</div>
+    <button class="abtn" id="btn-clear-rows">Clear Rows</button>
+  </div>
+
+  <div id="sheet-panel">
+    <div class="panel-head">Spreadsheet Preview</div>
+    <div id="sheet-view">
+      <table id="sheet-table">
+        <thead><tr id="sh-head"></tr></thead>
+        <tbody id="sh-body"></tbody>
+      </table>
+    </div>
+    <div class="sheet-foot">
+      <button class="exbtn primary" id="btn-csv">Export CSV</button>
+      <button class="exbtn sec2" id="btn-xls">Export XLS</button>
+      <span id="sheet-stats"></span>
+    </div>
+  </div>
+</main>
+
+<footer>Your document is processed locally in your browser and never uploaded to a server.</footer>
+</div>
+
+<!-- Divide overlay -->
+<div id="overlay-back">
+  <div id="overlay">
+    <div class="ov-head">
+      <h2 id="ov-title">Divide to Columns</h2>
+      <button class="obtn" id="ov-undo">Undo</button>
+      <button class="obtn" id="ov-cancel">Cancel</button>
+      <button class="obtn primary" id="ov-confirm">Confirm</button>
+    </div>
+    <div class="ov-ctrl">
+      <span id="ov-div-tools" style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label>Delimiter:</label>
+        <input type="text" id="delim-inp" placeholder=": or —" maxlength="8">
+        <button class="obtn" id="btn-apply-delim">Apply</button>
+        <span style="width:1px;height:18px;background:var(--border)"></span>
+        <button class="obtn" id="btn-clear-divs">Clear dividers</button>
+        <span style="width:1px;height:18px;background:var(--border)"></span>
+        <label style="font-size:12px;color:var(--dim);cursor:pointer;user-select:none"><input type="checkbox" id="chk-gap-zones" style="margin-right:4px">Show gaps</label>
+      </span>
+      <span style="flex:1;min-width:8px"></span>
+      <span id="ov-hint" style="font-size:12px;color:var(--accent);font-weight:500;margin-right:10px"></span>
+      <span id="ov-phase-badge"></span>
+    </div>
+    <div id="cv-wrap">
+      <div id="cv">
+        <div id="cv-rail"><span id="cv-rail-label">← click gap to add divider</span></div>
+      </div>
+    </div>
+    <div id="cv-close-tail"></div>
+    <div id="row-edit-bar">
+      <span id="row-edit-info">Editing row</span>
+      <span id="row-normal-btns">
+        <button class="obtn" id="btn-row-done">Done</button>
+        <button class="obtn" id="btn-row-cancel">Cancel edit</button>
+        <button class="obtn" id="btn-row-apply" style="display:none">Apply to all…</button>
+      </span>
+      <span id="row-preview-btns">
+        <button class="obtn primary" id="btn-preview-commit">Commit</button>
+        <button class="obtn" id="btn-preview-revert">← Revert</button>
+      </span>
+    </div>
+    <div style="padding:6px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--dim);flex-shrink:0">
+      Row 1: click gap to add divider &nbsp;|&nbsp; drag divider to move (snaps to gaps) &nbsp;|&nbsp; dbl-click to remove &nbsp;|&nbsp;
+      Rows 2+: dividers auto-align to nearest gap &nbsp;|&nbsp; <span style="color:var(--accent);font-weight:600">drag clusters</span> to adjust per-row splits &nbsp;|&nbsp;
+      <span id="multi-inst" style="display:none;color:var(--accent)">Click cluster to mark/unmark row starts &nbsp;|&nbsp; <span style="color:#f59e0b">amber border</span> = open tail</span>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════════════════
+// DEMO
+// ══════════════════════════════════════════════════════════════
+const DEMO = `ACT ONE, SCENE THREE
+[Stage direction: The kitchen. Morning. HOMER is eating cereal.]
+
+HOMER: We have to go now. I mean it this time.
+
+MARGE: But Homer, I haven't finished packing the—
+
+HOMER: Packing is for people who aren't late.
+  Which is not us.
+
+[Stage direction: BART enters, wearing a cape.]
+
+BART: Did someone say go?
+
+LISA: Nobody said go, Bart. Pay attention.
+
+BART: I heard go.`;
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let S = { text:'', omits:[], rows:[] };
+let undos=[], redos=[];
+let sel={active:false,s:-1,e:-1};
+let mouseDown=false, mdIdx=-1, mdWord=false;
+
+// Overlay
+let ov = {
+  mode:'single', selStart:0, selEnd:0,
+  selText:'',        // cleaned selection text — omits stripped
+  cleanPosMap:[],    // cleanPosMap[selTextPos] = S.text position
+  dividers:[],       // [{id,x}]
+  rowOverrides:{},   // {rowIdx:{divId:xPx}}
+  rowStarts:[],      // char offsets in selText (multi)
+  prevDividers:[],
+  rowWordOrder:{},   // {rStart: reorderedFlatText}
+  tailClosed:false,  // whether the last row has been explicitly closed/finalized
+};
+let activeDrag=null; // {type:'global', divId, startCX, startX}
+let clusterDragState=null;
+let ovUndoStack=[];
+
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+let _uid=0;
+function uid(){ return 'u'+(++_uid); }
+function $(id){ return document.getElementById(id); }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function flattenText(t){ return t.replace(/[\r\n]+/g,' '); }
+
+// ── Undo/redo ──
+function pushUndo(){ undos.push(JSON.stringify(S)); redos=[]; refreshUndoBtns(); }
+function doUndo(){ if(!undos.length)return; redos.push(JSON.stringify(S)); S=JSON.parse(undos.pop()); renderDoc();renderSheet();refreshUndoBtns(); }
+function doRedo(){ if(!redos.length)return; undos.push(JSON.stringify(S)); S=JSON.parse(redos.pop()); renderDoc();renderSheet();refreshUndoBtns(); }
+function refreshUndoBtns(){ $('btn-undo').disabled=!undos.length; $('btn-redo').disabled=!redos.length; }
+
+// ══════════════════════════════════════════════════════════════
+// WORD HOVER OVERLAY (position:fixed, shared by doc + canvas)
+// ══════════════════════════════════════════════════════════════
+// Returns the bounding rect of text characters [s,e) within a container's text tree.
+function getCharsRect(s, e, container){
+  let pos=0, sN=null, sO=0, eN=null, eO=0;
+  function walk(n){
+    if(sN&&eN) return;
+    if(n.nodeType===Node.TEXT_NODE){
+      const len=n.length;
+      if(!sN&&pos+len>s){ sN=n; sO=s-pos; }
+      if(!eN&&pos+len>=e){ eN=n; eO=e-pos; }
+      pos+=len;
+    } else { for(const c of n.childNodes) walk(c); }
+  }
+  walk(container);
+  if(!sN||!eN) return null;
+  try{
+    const r=document.createRange(); r.setStart(sN,sO); r.setEnd(eN,eO);
+    return r.getBoundingClientRect();
+  }catch(_){ return null; }
+}
+
+function getOrCreateHl(id, z){
+  let el=document.getElementById(id);
+  if(!el){
+    el=document.createElement('div'); el.id=id;
+    el.style.cssText=`display:none;position:fixed;pointer-events:none;`+
+      `background:rgba(251,191,36,.22);border:1.5px solid rgba(245,158,11,.6);`+
+      `border-radius:3px;z-index:${z};transition:none`;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function showHl(id, rect, z){
+  if(!rect||rect.width<2) return;
+  const el=getOrCreateHl(id,z);
+  el.style.left=rect.left+'px'; el.style.top=rect.top+'px';
+  el.style.width=rect.width+'px'; el.style.height=rect.height+'px';
+  el.style.display='block';
+}
+function hideHl(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+
+// ══════════════════════════════════════════════════════════════
+// DOC RENDERING
+// ══════════════════════════════════════════════════════════════
+function buildSegments(){
+  const n=S.text.length; if(!n) return [];
+  const types=new Array(n).fill('n');
+  for(const om of S.omits) for(let i=om.start;i<om.end&&i<n;i++) types[i]='o';
+  for(let ri=0;ri<S.rows.length;ri++){ const row=S.rows[ri]; for(let i=row.start;i<row.end&&i<n;i++) types[i]='r'+ri; }
+  const ss=sel.active?Math.min(sel.s,sel.e):-1, se=sel.active?Math.max(sel.s,sel.e):-1;
+  const segs=[]; let i=0;
+  while(i<n){
+    let t=types[i],j=i+1; while(j<n&&types[j]===t)j++;
+    if(ss<j&&se>i){
+      const lo=Math.max(ss,i),hi=Math.min(se,j);
+      if(lo>i) segs.push({text:S.text.slice(i,lo),t,sel:false});
+      segs.push({text:S.text.slice(lo,hi),t,sel:true});
+      if(hi<j) segs.push({text:S.text.slice(hi,j),t,sel:false});
+    } else segs.push({text:S.text.slice(i,j),t,sel:ss<j&&se>i});
+    i=j;
+  }
+  return segs;
+}
+
+function renderDoc(){
+  const view=$('doc-view'); const segs=buildSegments();
+  if(!segs.length){ view.innerHTML='<span style="color:var(--dim);font-style:italic">Drop a file, paste text, or open a file to get started.</span>'; return; }
+  view.innerHTML='';
+  segs.forEach(sg=>{
+    const ri=sg.t.startsWith('r')?parseInt(sg.t.slice(1)):-1;
+    let baseCls='';
+    if(sg.t==='o') baseCls='s-omit';
+    else if(ri>=0) baseCls=ri%2===0?'s-row-even':'s-row-odd';
+    // Tokenize into word/gap sub-spans so selection highlight never covers whitespace
+    const toks=sg.text.match(/\S+|\s+/g)||[sg.text];
+    toks.forEach(tok=>{
+      const span=document.createElement('span'); span.textContent=tok;
+      const isGap=/^\s/.test(tok);
+      let cls=baseCls;
+      // Only apply selection highlight to non-whitespace tokens
+      if(sg.sel&&!isGap) cls=cls?cls+' s-sel':'s-sel';
+      if(cls) span.className=cls;
+      view.appendChild(span);
+    });
+  });
+  updateActionBtns();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SELECTION — DOC VIEW
+// ══════════════════════════════════════════════════════════════
+function charIdxAt(clientX, clientY){
+  let node,offset;
+  if(document.caretRangeFromPoint){
+    const r=document.caretRangeFromPoint(clientX,clientY); if(!r)return -1;
+    node=r.startContainer; offset=r.startOffset;
+  } else if(document.caretPositionFromPoint){
+    const p=document.caretPositionFromPoint(clientX,clientY); if(!p)return -1;
+    node=p.offsetNode; offset=p.offset;
+  } else return -1;
+  if(node.nodeType!==Node.TEXT_NODE) return -1;
+  const view=$('doc-view'); let pos=0;
+  for(const child of view.childNodes){
+    if(child===node||child===node.parentElement){ pos+=offset; return pos; }
+    pos+=(child.textContent||'').length;
+  }
+  return -1;
+}
+
+function wordBounds(idx){
+  let s=idx,e=idx;
+  while(s>0&&/\S/.test(S.text[s-1]))s--;
+  while(e<S.text.length&&/\S/.test(S.text[e]))e++;
+  return{s,e};
+}
+function isInsideWord(idx){
+  return idx>0&&idx<S.text.length&&/\S/.test(S.text[idx-1])&&/\S/.test(S.text[idx]);
+}
+
+$('doc-view').addEventListener('mousedown',e=>{
+  if(e.button!==0)return;
+  e.preventDefault();
+  hideHl('doc-word-hl');
+  const idx=charIdxAt(e.clientX,e.clientY); if(idx===-1)return;
+  // Never start a selection in whitespace
+  if(!isInsideWord(idx)){
+    sel={active:false,s:0,e:0};
+    renderDoc(); updateSelInfo(); updateActionBtns();
+    return;
+  }
+  mouseDown=true; mdIdx=idx; mdWord=true;
+  const b=wordBounds(idx); sel={active:true,s:b.s,e:b.e};
+  updateModeBadge(true);
+  renderDoc(); updateSelInfo();
+});
+document.addEventListener('mousemove',e=>{
+  if(!mouseDown)return;
+  const idx=charIdxAt(e.clientX,e.clientY); if(idx===-1)return;
+  // Always snap to word boundaries — selection is word-granular only
+  const lo=Math.min(mdIdx,idx),hi=Math.max(mdIdx,idx);
+  const bs=wordBounds(lo),be=wordBounds(hi);
+  sel={active:true,s:bs.s,e:be.e};
+  renderDoc(); updateSelInfo();
+});
+document.addEventListener('mouseup',()=>{
+  mouseDown=false;
+  // Trim selection to word boundaries; clear if result is empty
+  if(sel.active&&sel.s!==sel.e){
+    let s=sel.s,e=sel.e;
+    while(s<e&&/\s/.test(S.text[s]))s++;
+    while(e>s&&/\s/.test(S.text[e-1]))e--;
+    if(s>=e) sel={active:false,s:0,e:0};
+    else { sel.s=s; sel.e=e; }
+  }
+  updateActionBtns();
+});
+
+// ── Doc view hover (word highlight + cursor mode) ──
+let _lastHoverWord=null;
+$('doc-view').addEventListener('mousemove',e=>{
+  if(mouseDown){ hideHl('doc-word-hl'); return; }
+  const idx=charIdxAt(e.clientX,e.clientY);
+  if(idx===-1){ hideHl('doc-word-hl'); $('doc-view').style.cursor='text'; return; }
+  if(isInsideWord(idx)){
+    const {s,e:we}=wordBounds(idx);
+    // Only re-measure if word changed — avoids layout thrash on every px
+    if(!_lastHoverWord||_lastHoverWord.s!==s||_lastHoverWord.e!==we){
+      _lastHoverWord={s,e:we};
+      const rect=getCharsRect(s,we,$('doc-view'));
+      showHl('doc-word-hl',rect,10);
+    }
+    $('doc-view').style.cursor='default';
+    updateModeBadge(true);
+  } else {
+    hideHl('doc-word-hl');
+    _lastHoverWord=null;
+    $('doc-view').style.cursor='text';
+    updateModeBadge(false);
+  }
+});
+$('doc-view').addEventListener('mouseleave',()=>{ hideHl('doc-word-hl'); _lastHoverWord=null; });
+
+function updateModeBadge(isWord){
+  const b=$('mode-badge'); b.style.display='inline';
+  b.textContent=isWord?'Word select':'Char select';
+}
+function updateSelInfo(){
+  const el=$('sel-info');
+  if(!sel.active||sel.s===sel.e){el.textContent='No selection';return;}
+  const clean=getCleanSelText(sel.s,sel.e);
+  const preview=clean.replace(/\n/g,'↵').slice(0,50);
+  el.textContent=`${clean.length} chars — "${preview}${clean.length>50?'…':''}"`;
+}
+function updateActionBtns(){
+  const has=sel.active&&sel.s!==sel.e;
+  $('btn-omit').disabled=!has; $('btn-div1').disabled=!has; $('btn-div2').disabled=!has;
+  $('btn-uomit').disabled=!(has&&S.omits.some(o=>o.start<sel.e&&o.end>sel.s));
+}
+
+// ══════════════════════════════════════════════════════════════
+// OMIT / UN-OMIT
+// ══════════════════════════════════════════════════════════════
+function doOmit(){
+  if(!sel.active||sel.s===sel.e)return;
+  pushUndo();
+  const s=Math.min(sel.s,sel.e),e=Math.max(sel.s,sel.e);
+  S.omits=S.omits.filter(o=>!(o.start<e&&o.end>s));
+  S.omits.push({id:uid(),start:s,end:e});
+  renderDoc(); scheduleSave();
+}
+function doUomit(){
+  if(!sel.active||sel.s===sel.e)return;
+  pushUndo();
+  const s=Math.min(sel.s,sel.e),e=Math.max(sel.s,sel.e);
+  S.omits=S.omits.filter(o=>!(o.start<e&&o.end>s));
+  renderDoc(); scheduleSave();
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLEAN SELECTION TEXT — strip omitted spans before divide editor
+// ══════════════════════════════════════════════════════════════
+function getCleanSelText(start,end){
+  // Collect omit ranges that overlap [start,end], clamped to selection
+  const omits=S.omits
+    .filter(o=>o.start<end&&o.end>start)
+    .map(o=>({start:Math.max(o.start,start),end:Math.min(o.end,end)}))
+    .sort((a,b)=>a.start-b.start);
+  if(!omits.length) return S.text.slice(start,end);
+  let result='',pos=start;
+  for(const om of omits){
+    if(pos<om.start) result+=S.text.slice(pos,om.start);
+    // If the join would concatenate two non-whitespace chars, insert a space
+    if(result.length&&!/\s$/.test(result)&&om.end<end&&!/^\s/.test(S.text.slice(om.end,end))){
+      result+=' ';
+    }
+    pos=om.end;
+  }
+  if(pos<end) result+=S.text.slice(pos,end);
+  return result;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLEAN POS MAP — selText position ↔ S.text position
+// ══════════════════════════════════════════════════════════════
+function buildCleanPosMap(start,end){
+  // Returns array where map[selTextPos] = S.text position
+  const omits=S.omits
+    .filter(o=>o.start<end&&o.end>start)
+    .map(o=>({start:Math.max(o.start,start),end:Math.min(o.end,end)}))
+    .sort((a,b)=>a.start-b.start);
+  const map=[];
+  let pos=start;
+  for(const om of omits){for(;pos<om.start;pos++) map.push(pos); pos=om.end;}
+  for(;pos<end;pos++) map.push(pos);
+  return map;
+}
+
+// Tag cluster spans with their S.text positions (used for Phase 2 omit hit-testing)
+function annotateClusterSPositions(rowEl,rStart){
+  if(!ov.cleanPosMap.length) return;
+  const rawSeg=rowEl.dataset.rawtext||'';
+  const wordPositions=[];
+  const re=/\S+/g; let m;
+  while((m=re.exec(rawSeg))!==null) wordPositions.push({start:m.index,end:m.index+m[0].length});
+  [...rowEl.querySelectorAll('.cv-cluster')].forEach((cl,ci)=>{
+    if(ci>=wordPositions.length) return;
+    const wp=wordPositions[ci];
+    const si=rStart+wp.start, ei=rStart+wp.end-1;
+    const sStart=si<ov.cleanPosMap.length?ov.cleanPosMap[si]:-1;
+    const sEnd=ei<ov.cleanPosMap.length?ov.cleanPosMap[ei]+1:-1;
+    cl.dataset.sstart=String(sStart); cl.dataset.send=String(sEnd);
+  });
+}
+
+// Remap rowStart positions (in old selText) to new selText after S.omits changes
+function remapRowStarts(oldMap,newMap,rowStarts){
+  const inv={}; newMap.forEach((sPos,i)=>{ inv[sPos]=i; });
+  const newStarts=[];
+  for(const rs of rowStarts){
+    if(rs>=oldMap.length) continue;
+    const sPos=oldMap[rs];
+    let newPos=inv[sPos];
+    if(newPos===undefined){
+      // Original position was omitted — move to next non-omitted word
+      let search=sPos+1;
+      while(search<=ov.selEnd){
+        if(inv[search]!==undefined){newPos=inv[search];break;}
+        search++;
+      }
+    }
+    if(newPos!==undefined&&newPos>0&&newPos<(ov.selText||'').length){
+      const st=ov.selText;
+      // Snap to word start
+      while(newPos>0&&!/\s/.test(st[newPos-1])) newPos--;
+      if(newPos>0&&!newStarts.includes(newPos)) newStarts.push(newPos);
+    }
+  }
+  return newStarts;
+}
+
+// ══════════════════════════════════════════════════════════════
+// OVERLAY — OPEN / CLOSE
+// ══════════════════════════════════════════════════════════════
+function openDivide(mode){
+  if(!sel.active||sel.s===sel.e)return;
+  ov.mode=mode;
+  ov.selStart=Math.min(sel.s,sel.e); ov.selEnd=Math.max(sel.s,sel.e);
+  ov.selText=getCleanSelText(ov.selStart,ov.selEnd);
+  ov.cleanPosMap=buildCleanPosMap(ov.selStart,ov.selEnd);
+  ov.dividers=ov.prevDividers.map(d=>({...d}));
+  ov.rowOverrides={}; ov.rowStarts=mode==='multi'?[]:null; ov.rowWordOrder={}; ov.tailClosed=false;
+  $('ov-title').textContent=mode==='single'?'Divide Single Row to Columns':'Divide Multiple Rows to Columns';
+  $('multi-inst').style.display=mode==='multi'?'inline':'none';
+  ovUndoStack=[];
+  buildDivideCanvas();
+  $('overlay-back').classList.add('open');
+}
+function closeOverlay(){ $('overlay-back').classList.remove('open'); activeDrag=null; hideHl('cv-word-hl'); }
+
+// ══════════════════════════════════════════════════════════════
+// DIVIDE CANVAS — HELPERS
+// ══════════════════════════════════════════════════════════════
+function parseRowTokens(text){
+  const tokens=[]; const re=/(\S+|\s+)/g; let m;
+  while((m=re.exec(text))!==null)
+    tokens.push({type:/\S/.test(m[0])?'cluster':'gap',text:m[0]});
+  return tokens;
+}
+
+function renderRowSpans(rowEl,text,isRow1){
+  const tokens=parseRowTokens(text);
+  const frag=document.createDocumentFragment();
+  let charPos=0,ci=0,gi=0;
+  tokens.forEach(tok=>{
+    const span=document.createElement('span');
+    span.textContent=tok.text;
+    span.dataset.charStart=String(charPos);
+    span.dataset.charEnd=String(charPos+tok.text.length);
+    charPos+=tok.text.length;
+    if(tok.type==='cluster'){
+      span.className=isRow1?'cv-cluster':'cv-cluster draggable';
+      span.dataset.ci=String(ci++);
+    } else {
+      span.className='cv-gap'; span.dataset.gi=String(gi++);
+    }
+    frag.appendChild(span);
+  });
+  rowEl.appendChild(frag);
+}
+
+function getGapPositions(rowEl){
+  const rowRect=rowEl.getBoundingClientRect();
+  return [...rowEl.querySelectorAll('.cv-gap')].map((span,i)=>{
+    const r=span.getBoundingClientRect();
+    return{gi:i,span,leftX:r.left-rowRect.left,rightX:r.right-rowRect.left,centerX:(r.left+r.right)/2-rowRect.left};
+  });
+}
+
+function getRowLeft(){
+  const row1=$('cv').querySelector('.cv-row');
+  return row1?row1.getBoundingClientRect().left:$('cv').getBoundingClientRect().left;
+}
+
+function getRow1Gaps(){
+  const row1=$('cv').querySelector('.cv-row[data-ridx="0"]');
+  return row1?getGapPositions(row1):[];
+}
+
+function snapDividerToGap(cursorX){
+  const gaps=getRow1Gaps(); if(!gaps.length) return cursorX;
+  let best=gaps[0],bestDist=Math.abs(gaps[0].centerX-cursorX);
+  for(const g of gaps){const d=Math.abs(g.centerX-cursorX);if(d<bestDist){bestDist=d;best=g;}}
+  return best.centerX;
+}
+
+function applySmartAlign(){
+  const cv=$('cv');
+  [...cv.querySelectorAll('.cv-row')].forEach(rowEl=>{
+    const ri=parseInt(rowEl.dataset.ridx||'0'); if(ri===0) return;
+    const gaps=getGapPositions(rowEl);
+    if(!ov.rowOverrides[ri]) ov.rowOverrides[ri]={};
+    rowEl.classList.toggle('no-gaps',!gaps.length);
+    ov.dividers.forEach(div=>{
+      if(!gaps.length){ ov.rowOverrides[ri][div.id]=div.x; return; }
+      let best=gaps[0],bestDist=Math.abs(gaps[0].centerX-div.x);
+      for(const g of gaps){const d=Math.abs(g.centerX-div.x);if(d<bestDist){bestDist=d;best=g;}}
+      ov.rowOverrides[ri][div.id]=best.centerX;
+    });
+  });
+  markGapDividers();
+}
+
+function markGapDividers(){
+  $('cv').querySelectorAll('.cv-gap.has-divider').forEach(g=>g.classList.remove('has-divider'));
+  const row1=$('cv').querySelector('.cv-row[data-ridx="0"]'); if(!row1) return;
+  const gaps=getGapPositions(row1);
+  ov.dividers.forEach(div=>{
+    let best=null,bestDist=Infinity;
+    for(const g of gaps){const d=Math.abs(g.centerX-div.x);if(d<bestDist){bestDist=d;best=g;}}
+    if(best) best.span.classList.add('has-divider');
+  });
+}
+
+function getCharSplitAtX(rowEl,divX,cvLeft){
+  const gaps=[...rowEl.querySelectorAll('.cv-gap')]; if(!gaps.length) return -1;
+  let bestGap=null,bestDist=Infinity;
+  for(const g of gaps){
+    const r=g.getBoundingClientRect();
+    const cx=(r.left+r.right)/2-cvLeft;
+    const d=Math.abs(cx-divX);
+    if(d<bestDist){bestDist=d;bestGap=g;}
+  }
+  return bestGap?parseInt(bestGap.dataset.charEnd||'0'):-1;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DIVIDE CANVAS — BUILD
+// ══════════════════════════════════════════════════════════════
+function buildDivideCanvas(){
+  const cv=$('cv');
+  while(cv.lastChild&&cv.lastChild.id!=='cv-rail') cv.removeChild(cv.lastChild);
+  // Ensure cleanPosMap is always current
+  if(!ov.cleanPosMap||!ov.cleanPosMap.length) ov.cleanPosMap=buildCleanPosMap(ov.selStart,ov.selEnd);
+  const selText=ov.selText||S.text.slice(ov.selStart,ov.selEnd);
+  const closeTailEl=$('cv-close-tail');
+
+  // ── Phase UI: badge + divider tool visibility ──
+  const phaseBadgeEl=$('ov-phase-badge');
+  const divToolsEl=$('ov-div-tools');
+  const hintEl=$('ov-hint');
+  if(ov.mode==='multi'){
+    if(!ov.tailClosed){
+      if(divToolsEl) divToolsEl.style.display='none';
+      if(phaseBadgeEl){phaseBadgeEl.textContent='Step 1 of 2 — Mark rows';phaseBadgeEl.className='p1';}
+      if(hintEl) hintEl.textContent='Click word → row  •  Shift+click → select  •  O → omit';
+    } else {
+      if(divToolsEl) divToolsEl.style.display='';
+      if(phaseBadgeEl){phaseBadgeEl.textContent='Step 2 of 2 — Set columns';phaseBadgeEl.className='p2';}
+      if(hintEl) hintEl.textContent='Click gap → divider  •  Shift+cluster → select  •  O → omit';
+    }
+  } else {
+    if(divToolsEl) divToolsEl.style.display='';
+    if(phaseBadgeEl){phaseBadgeEl.textContent='';phaseBadgeEl.className='';}
+    if(hintEl) hintEl.textContent='';
+  }
+
+  if(ov.mode==='single'){
+    const flat=ov.rowWordOrder[0]||flattenText(selText);
+    const row=document.createElement('div');
+    row.className='cv-row even'+(ov.rowWordOrder[0]?' word-order-override':'');
+    row.dataset.rstart='0'; row.dataset.rend=String(selText.length);
+    row.dataset.ridx='0'; row.dataset.rawtext=flat;
+    renderRowSpans(row,flat,true);
+    cv.appendChild(row);
+    annotateClusterSPositions(row,0);
+    if(closeTailEl) closeTailEl.className='';
+  } else {
+    const sorted=[...new Set([0,...(ov.rowStarts||[])])].sort((a,b)=>a-b);
+    if(!sorted.length||sorted[0]!==0) sorted.unshift(0);
+    sorted.forEach((rStart,ri)=>{
+      const rEnd=ri+1<sorted.length?sorted[ri+1]:selText.length;
+      const rawSeg=selText.slice(rStart,rEnd);
+      const isFinalized=ri<sorted.length-1||ov.tailClosed;
+      const isRow1=ri===0;
+      const rwo=ov.rowWordOrder[rStart];
+      const displayText=rwo||(isFinalized?flattenText(rawSeg):rawSeg);
+      const row=document.createElement('div');
+      row.className=`cv-row ${ri%2===0?'even':'odd'}${isFinalized?'':' tail'}${rwo?' word-order-override':''}${isRow1?'':' click-target'}`;
+      row.dataset.rstart=String(rStart); row.dataset.rend=String(rEnd);
+      row.dataset.ridx=String(ri); row.dataset.rawtext=rwo||rawSeg;
+      if(ri>0){
+        const dot=document.createElement('div');
+        dot.className='row-start-dot'; dot.title='Row start — click to remove';
+        row.appendChild(dot);
+      }
+      renderRowSpans(row,displayText,isRow1);
+      cv.appendChild(row);
+      // Tag cluster spans with S.text positions for omit hit-testing
+      annotateClusterSPositions(row,rStart);
+      // Preview mode: override rendering for affected rows
+      if(rowPreviewState&&isFinalized){
+        if(rStart===rowPreviewState.sourceRStart){
+          row.classList.add('preview-source');
+        } else if(rowPreviewState.previews[rStart]!==undefined){
+          // Re-render this row with diff highlights
+          [...row.querySelectorAll('.cv-cluster,.cv-gap')].forEach(s=>s.remove());
+          renderPreviewDiffSpans(row,displayText,rowPreviewState.previews[rStart]);
+        } else {
+          row.classList.add('preview-nochange');
+        }
+      }
+    });
+    // Close-tail / Edit-rows affordance
+    if(closeTailEl){
+      if(!ov.tailClosed){
+        closeTailEl.className='visible';
+        closeTailEl.innerHTML='<button id="btn-close-tail">⌐ Close last row</button>';
+        const btn=closeTailEl.querySelector('#btn-close-tail');
+        if(btn) btn.addEventListener('click',()=>{ saveOvSnapshot(); ov.tailClosed=true; buildDivideCanvas(); });
+      } else {
+        closeTailEl.className='visible';
+        closeTailEl.innerHTML='<button id="btn-edit-rows">← Edit rows</button>';
+        const btn=closeTailEl.querySelector('#btn-edit-rows');
+        if(btn) btn.addEventListener('click',()=>{
+          saveOvSnapshot(); ov.tailClosed=false; ov.dividers=[]; ov.rowOverrides={}; buildDivideCanvas();
+        });
+      }
+    }
+  }
+  requestAnimationFrame(()=>{ applySmartAlign(); renderDividers(); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// DIVIDERS — RENDER
+// ══════════════════════════════════════════════════════════════
+function renderDividers(){
+  const cv=$('cv'),rail=$('cv-rail'); if(!rail) return;
+  cv.querySelectorAll('.dv-row-line').forEach(el=>el.remove());
+  rail.querySelectorAll('.dv-global-handle').forEach(el=>el.remove());
+  // In multi mode, dividers are inaccessible until all rows are closed
+  if(ov.mode==='multi'&&!ov.tailClosed) return;
+  const rowEls=[...cv.querySelectorAll('.cv-row')];
+
+  ov.dividers.forEach(div=>{
+    const h=document.createElement('div');
+    h.className='dv-global-handle'; h.style.left=div.x+'px';
+    h.dataset.divId=div.id; h.title='Drag to move  •  Dbl-click to remove'; h.textContent='⬥';
+    h.addEventListener('mousedown',e=>{ e.stopPropagation(); e.preventDefault();
+      activeDrag={type:'global',divId:div.id,startCX:e.clientX,startX:div.x}; });
+    h.addEventListener('dblclick',e=>{ e.stopPropagation(); removeGlobalDivider(div.id); });
+    rail.appendChild(h);
+  });
+
+  rowEls.forEach(rowEl=>{
+    const ri=parseInt(rowEl.dataset.ridx||'0');
+    ov.dividers.forEach(div=>{
+      const isRow1=ri===0;
+      const xPx=isRow1?div.x:(ov.rowOverrides[ri]?.[div.id]??div.x);
+      const line=document.createElement('div');
+      line.className='dv-row-line shared'; line.style.left=xPx+'px';
+      line.style.opacity=isRow1?'1':'.5'; line.style.cursor=isRow1?'col-resize':'default';
+      if(!isRow1) line.style.pointerEvents='none';
+      const knob=document.createElement('div'); knob.className='dv-row-knob'; knob.textContent='⋮';
+      line.appendChild(knob);
+      if(isRow1){
+        line.addEventListener('mousedown',e=>{ e.stopPropagation(); e.preventDefault();
+          activeDrag={type:'global',divId:div.id,startCX:e.clientX,startX:div.x}; });
+        line.addEventListener('dblclick',e=>{ e.stopPropagation(); removeGlobalDivider(div.id); });
+      }
+      rowEl.appendChild(line);
+    });
+  });
+  markGapDividers();
+}
+
+function removeGlobalDivider(divId){
+  ov.dividers=ov.dividers.filter(d=>d.id!==divId);
+  for(const ri in ov.rowOverrides) delete ov.rowOverrides[ri][divId];
+  requestAnimationFrame(()=>{ applySmartAlign(); renderDividers(); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLUSTER DRAG — rows 2+: drag clusters to move per-row divider to adjacent gap
+// ══════════════════════════════════════════════════════════════
+$('cv-wrap').addEventListener('mousedown',e=>{
+  if(rowEditState||rowPreviewState) return;
+  if(e.button!==0||activeDrag) return;
+  if(ov.mode==='multi'&&!ov.tailClosed) return;
+  const clusterSpan=e.target.closest('.cv-cluster.draggable'); if(!clusterSpan) return;
+  const rowEl=clusterSpan.closest('.cv-row'); if(!rowEl) return;
+  const ri=parseInt(rowEl.dataset.ridx||'0'); if(ri===0||!ov.dividers.length) return;
+  const cvRect=$('cv').getBoundingClientRect();
+  const cr=clusterSpan.getBoundingClientRect();
+  const clusterCX=(cr.left+cr.right)/2-cvRect.left;
+  let nearestDivId=null,nearestDist=Infinity;
+  ov.dividers.forEach(div=>{
+    const divX=ov.rowOverrides[ri]?.[div.id]??div.x;
+    const d=Math.abs(divX-clusterCX);
+    if(d<nearestDist){nearestDist=d;nearestDivId=div.id;}
+  });
+  if(!nearestDivId) return;
+  e.preventDefault();
+  clusterDragState={rowEl,ri,clusterSpan,divId:nearestDivId,startCX:e.clientX,committed:false};
+});
+
+// ══════════════════════════════════════════════════════════════
+// DRAG HANDLERS
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('mousemove',e=>{
+  if(clusterDragState){
+    if(!clusterDragState.committed&&Math.abs(e.clientX-clusterDragState.startCX)>4){
+      clusterDragState.committed=true;
+      clusterDragState.clusterSpan.classList.add('drag-placeholder');
+      $('cv-wrap').classList.add('is-grabbing');
+    }
+    if(clusterDragState.committed){
+      const{rowEl,ri,divId}=clusterDragState;
+      const cvRect=$('cv').getBoundingClientRect();
+      const cursorX=e.clientX-cvRect.left;
+      const gaps=getGapPositions(rowEl);
+      if(gaps.length){
+        let best=gaps[0],bestDist=Math.abs(gaps[0].centerX-cursorX);
+        for(const g of gaps){const d=Math.abs(g.centerX-cursorX);if(d<bestDist){bestDist=d;best=g;}}
+        if(!ov.rowOverrides[ri]) ov.rowOverrides[ri]={};
+        if(ov.rowOverrides[ri][divId]!==best.centerX){
+          ov.rowOverrides[ri][divId]=best.centerX; renderDividers();
+        }
+      }
+    }
+    return;
+  }
+  if(!activeDrag) return;
+  // Use cursor position relative to row 1's left edge for consistent row-relative coords
+  const cursorRowX=e.clientX-getRowLeft();
+  const snappedX=snapDividerToGap(cursorRowX);
+  const div=ov.dividers.find(d=>d.id===activeDrag.divId);
+  if(div&&snappedX!==div.x){
+    div.x=snappedX;
+    applySmartAlign(); renderDividers();
+  }
+});
+document.addEventListener('mouseup',()=>{
+  if(clusterDragState){
+    if(clusterDragState.clusterSpan) clusterDragState.clusterSpan.classList.remove('drag-placeholder');
+    clusterDragState=null; $('cv-wrap').classList.remove('is-grabbing'); return;
+  }
+  activeDrag=null; $('cv-wrap').classList.remove('is-grabbing');
+});
+
+// ══════════════════════════════════════════════════════════════
+// CANVAS HOVER — drop-zone highlight on row 1 gaps (cursors handled by CSS)
+// ══════════════════════════════════════════════════════════════
+$('cv-wrap').addEventListener('mousemove',e=>{
+  if(activeDrag||clusterDragState){ clearDropZones(); clearRsCandidate(); return; }
+  // Phase 1 row-start candidate highlight
+  if(ov.mode==='multi'&&!ov.tailClosed){
+    clearRsCandidate();
+    const tailRow=$('cv').querySelector('.cv-row.tail');
+    if(tailRow&&tailRow.contains(e.target)){
+      let clSpan=e.target.closest('.cv-cluster');
+      if(!clSpan){
+        // Hovering over a gap — find the next cluster (word the cursor is approaching)
+        const gapSpan=e.target.closest('.cv-gap');
+        if(gapSpan){
+          let next=gapSpan.nextElementSibling;
+          while(next&&!next.classList.contains('cv-cluster')) next=next.nextElementSibling;
+          clSpan=next;
+        }
+      }
+      if(clSpan){
+        const charStart=parseInt(clSpan.dataset.charStart||'0');
+        const rstart=parseInt(tailRow.dataset.rstart||'0');
+        const absStart=rstart+charStart;
+        // Only highlight if this position isn't already a placed row-start
+        if(absStart>0&&!(ov.rowStarts||[]).includes(absStart)){
+          _rsCandidateSpan=clSpan;
+          clSpan.classList.add('rs-candidate');
+        }
+      }
+    }
+  } else {
+    clearRsCandidate();
+  }
+  // Drop-zone highlight (Phase 2 / single mode row-1 gaps)
+  const gapSpan=e.target.closest?.('.cv-gap');
+  const rowEl=gapSpan?.closest('.cv-row');
+  if(gapSpan&&rowEl&&rowEl.dataset.ridx==='0'&&(ov.mode==='single'||ov.tailClosed)){
+    clearDropZones(); gapSpan.classList.add('drop-zone');
+  } else {
+    clearDropZones();
+  }
+});
+$('cv-wrap').addEventListener('mouseleave',()=>{ clearDropZones(); clearRsCandidate(); });
+function clearDropZones(){ $('cv').querySelectorAll('.cv-gap.drop-zone').forEach(g=>g.classList.remove('drop-zone')); }
+let _rsCandidateSpan=null;
+function clearRsCandidate(){ if(_rsCandidateSpan){_rsCandidateSpan.classList.remove('rs-candidate');_rsCandidateSpan=null;} }
+
+// ══════════════════════════════════════════════════════════════
+// CANVAS CLICK — row-start marking (multi) or gap→divider (single / multi+tailClosed)
+// ══════════════════════════════════════════════════════════════
+$('cv-wrap').addEventListener('click',e=>{
+  if(rowEditState||rowPreviewState) return;
+  if(activeDrag||clusterDragState) return;
+  if(e.target.closest('.dv-row-line')||e.target.closest('.dv-global-handle')) return;
+
+  // Rail: only accessible once all rows are finalized
+  const isRail=!!(e.target.closest('#cv-rail'));
+  if(isRail){
+    if(ov.mode==='multi'&&!ov.tailClosed) return;
+    const snappedX=snapDividerToGap(e.clientX-getRowLeft());
+    if(snappedX>0) addGlobalDivider(snappedX);
+    return;
+  }
+
+  const rowEl=e.target.closest('.cv-row'); if(!rowEl) return;
+
+  // Shift+click on a cluster: toggle editor-sel for omit (any mode)
+  if(e.shiftKey){
+    const clSpan=e.target.closest('.cv-cluster'); if(!clSpan) return;
+    clSpan.classList.toggle('editor-sel');
+    return;
+  }
+
+  // Single mode: gap click places divider
+  if(ov.mode==='single'){
+    const gapSpan=e.target.closest('.cv-gap'); if(!gapSpan) return;
+    const r=gapSpan.getBoundingClientRect();
+    addGlobalDivider((r.left+r.right)/2-rowEl.getBoundingClientRect().left);
+    return;
+  }
+
+  if(ov.mode!=='multi') return;
+
+  // Multi mode, rows finalized: gap click places divider
+  if(ov.tailClosed){
+    const gapSpan=e.target.closest('.cv-gap'); if(!gapSpan) return;
+    const r=gapSpan.getBoundingClientRect();
+    addGlobalDivider((r.left+r.right)/2-rowEl.getBoundingClientRect().left);
+    return;
+  }
+
+  // Multi mode, rows NOT finalized: mark or remove row-starts
+  // Dot click removes that row's start marker
+  if(e.target.closest('.row-start-dot')){
+    const rstart=parseInt(rowEl.dataset.rstart||'0');
+    if(rstart===0) return;
+    const idx=(ov.rowStarts||[]).indexOf(rstart);
+    if(idx===-1) return;
+    saveOvSnapshot();
+    ov.rowStarts.splice(idx,1);
+    ov.tailClosed=false;
+    buildDivideCanvas();
+    return;
+  }
+
+  // Click in tail row (last unfinalized row): mark row-start at cursor
+  if(!rowEl.classList.contains('tail')) return;
+  let node,offset;
+  if(document.caretRangeFromPoint){
+    const r=document.caretRangeFromPoint(e.clientX,e.clientY); if(!r) return;
+    node=r.startContainer; offset=r.startOffset;
+  } else if(document.caretPositionFromPoint){
+    const p=document.caretPositionFromPoint(e.clientX,e.clientY); if(!p) return;
+    node=p.offsetNode; offset=p.offset;
+  } else return;
+  if(node.nodeType!==Node.TEXT_NODE) return;
+  const spanEl=node.parentElement?.closest('.cv-cluster,.cv-gap');
+  const charStartInSpan=spanEl?parseInt(spanEl.dataset.charStart||'0'):0;
+  const rstart=parseInt(rowEl.dataset.rstart||'0');
+  const rawClickedChar=rstart+charStartInSpan+offset;
+  if(rawClickedChar===0) return;
+  // Snap to the start of the word under the cursor
+  const selText=ov.selText||S.text.slice(ov.selStart,ov.selEnd);
+  const rend=parseInt(rowEl.dataset.rend||String(selText.length));
+  const rawSeg=selText.slice(rstart,rend);
+  let relPos=rawClickedChar-rstart;
+  // If in whitespace, advance to next word start
+  while(relPos<rawSeg.length&&/\s/.test(rawSeg[relPos])) relPos++;
+  if(relPos>=rawSeg.length) return; // clicked trailing whitespace
+  // Walk back to start of this word
+  while(relPos>0&&!/\s/.test(rawSeg[relPos-1])) relPos--;
+  const clickedChar=rstart+relPos;
+  if(clickedChar===0) return;
+  const idx=(ov.rowStarts||[]).indexOf(clickedChar);
+  saveOvSnapshot();
+  if(idx!==-1) ov.rowStarts.splice(idx,1); else ov.rowStarts.push(clickedChar);
+  ov.tailClosed=false;
+  buildDivideCanvas();
+});
+
+function saveOvSnapshot(){
+  ovUndoStack.push(JSON.stringify({
+    dividers:ov.dividers.map(d=>({...d})),
+    rowOverrides:JSON.parse(JSON.stringify(ov.rowOverrides||{})),
+    rowStarts:ov.rowStarts?[...ov.rowStarts]:null,
+    rowWordOrder:JSON.parse(JSON.stringify(ov.rowWordOrder||{})),
+    tailClosed:ov.tailClosed,
+    selText:ov.selText||'',
+    cleanPosMap:[...(ov.cleanPosMap||[])],
+    sOmits:S.omits.map(o=>({...o})),
+  }));
+}
+
+function addGlobalDivider(xPx){
+  if(ov.dividers.some(d=>Math.abs(d.x-xPx)<8)) return;
+  saveOvSnapshot();
+  ov.dividers.push({id:uid(),x:xPx});
+  ov.dividers.sort((a,b)=>a.x-b.x);
+  requestAnimationFrame(()=>{ applySmartAlign(); renderDividers(); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// DELIMITER APPLY — find gap after cluster containing delimiter
+// ══════════════════════════════════════════════════════════════
+$('btn-apply-delim').addEventListener('click',()=>{
+  const delim=$('delim-inp').value; if(!delim) return;
+  const cv=$('cv'),cvRect=cv.getBoundingClientRect();
+  const rowEls=[...cv.querySelectorAll('.cv-row')]; if(!rowEls.length) return;
+  const hits=[];
+  rowEls.forEach(rowEl=>{
+    const ri=parseInt(rowEl.dataset.ridx||'0');
+    const clusters=[...rowEl.querySelectorAll('.cv-cluster')];
+    let foundCluster=null;
+    for(const c of clusters){ if(c.textContent.includes(delim)){foundCluster=c;break;} }
+    if(!foundCluster) return;
+    let nextGap=foundCluster.nextElementSibling;
+    while(nextGap&&!nextGap.classList.contains('cv-gap')) nextGap=nextGap.nextElementSibling;
+    if(!nextGap) return;
+    const r=nextGap.getBoundingClientRect();
+    hits.push({ri,xPx:(r.left+r.right)/2-cvRect.left});
+  });
+  if(!hits.length) return;
+  const row1Hit=hits.find(h=>h.ri===0)||hits[0];
+  if(ov.dividers.some(d=>Math.abs(d.x-row1Hit.xPx)<8)) return;
+  const divId=uid();
+  ov.dividers.push({id:divId,x:row1Hit.xPx}); ov.dividers.sort((a,b)=>a.x-b.x);
+  hits.forEach(({ri,xPx})=>{
+    if(ri===0) return;
+    if(!ov.rowOverrides[ri]) ov.rowOverrides[ri]={};
+    ov.rowOverrides[ri][divId]=xPx;
+  });
+  requestAnimationFrame(()=>{ applySmartAlign(); renderDividers(); });
+});
+
+$('btn-clear-divs').addEventListener('click',()=>{ ov.dividers=[]; ov.rowOverrides={}; renderDividers(); });
+$('chk-gap-zones').addEventListener('change',e=>{ $('cv').classList.toggle('gap-zones-on',e.target.checked); });
+
+// Overlay undo
+$('ov-undo').addEventListener('click',()=>{
+  if(!ovUndoStack.length) return;
+  const s=JSON.parse(ovUndoStack.pop());
+  ov.dividers=s.dividers; ov.rowOverrides=s.rowOverrides||{}; ov.rowStarts=s.rowStarts;
+  ov.rowWordOrder=s.rowWordOrder||{}; ov.tailClosed=s.tailClosed||false;
+  if(s.selText!==undefined) ov.selText=s.selText;
+  if(s.cleanPosMap) ov.cleanPosMap=s.cleanPosMap;
+  if(s.sOmits) S.omits=s.sOmits; // restore pre-omit state
+  buildDivideCanvas();
+});
+
+// ══════════════════════════════════════════════════════════════
+// CONFIRM DIVIDE — split at nearest gap to each divider
+// ══════════════════════════════════════════════════════════════
+$('ov-confirm').addEventListener('click',confirmDivide);
+
+function confirmDivide(){
+  const cv=$('cv'),cvRect=cv.getBoundingClientRect();
+  const rowEls=[...cv.querySelectorAll('.cv-row')];
+  pushUndo();
+  S.rows=S.rows.filter(r=>!(r.start>=ov.selStart&&r.end<=ov.selEnd));
+  const newRows=[];
+  rowEls.forEach(rowEl=>{
+    const ri=parseInt(rowEl.dataset.ridx||'0');
+    const rStart=parseInt(rowEl.dataset.rstart), rEnd=parseInt(rowEl.dataset.rend);
+    const flatText=flattenText(rowEl.dataset.rawtext||'');
+    const effectiveXs=ov.dividers.map(div=>{
+      const over=ov.rowOverrides[ri]?.[div.id]; return over!==undefined?over:div.x;
+    }).sort((a,b)=>a-b);
+    const splits=[0];
+    for(const divX of effectiveXs){
+      const ci=getCharSplitAtX(rowEl,divX,cvRect.left);
+      if(ci>0&&ci<flatText.length&&!splits.includes(ci)) splits.push(ci);
+    }
+    splits.push(flatText.length); splits.sort((a,b)=>a-b);
+    const cells=[];
+    for(let i=0;i<splits.length-1;i++){
+      let cell=flatText.slice(splits[i],splits[i+1]);
+      cell=cell.replace(/^[ \t]+/,'').replace(/[ \t]+$/,'');
+      cells.push(cell);
+    }
+    newRows.push({id:uid(),cells,start:ov.selStart+rStart,end:ov.selStart+rEnd});
+  });
+  S.rows=[...S.rows,...newRows].sort((a,b)=>a.start-b.start);
+  ov.prevDividers=ov.dividers.map(d=>({...d}));
+  ovUndoStack=[];
+  closeOverlay(); renderDoc(); renderSheet(); scheduleSave();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHEET RENDERING
+// ══════════════════════════════════════════════════════════════
+function renderSheet(){
+  const head=$('sh-head'),body=$('sh-body');
+  if(!S.rows.length){
+    head.innerHTML='';
+    body.innerHTML='<tr><td style="color:var(--dim);padding:20px;text-align:center" colspan="26">No rows yet — select text and use Divide actions.</td></tr>';
+    $('sheet-stats').textContent=''; return;
+  }
+  const maxCols=Math.max(...S.rows.map(r=>r.cells.length));
+  head.innerHTML='<th>#</th>'+[...Array(maxCols)].map((_,i)=>`<th>${String.fromCharCode(65+i)}</th>`).join('');
+  body.innerHTML='';
+  S.rows.forEach((row,ri)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="color:var(--dim);font-size:10px;text-align:center">${ri+1}</td>`
+      +[...Array(maxCols)].map((_,ci)=>`<td>${escHtml(row.cells[ci]||'')}</td>`).join('');
+    body.appendChild(tr);
+  });
+  $('sheet-stats').textContent=`${S.rows.length} row${S.rows.length!==1?'s':''} × ${maxCols} col${maxCols!==1?'s':''}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════════════
+$('btn-csv').addEventListener('click',()=>{
+  if(!S.rows.length){alert('No rows to export.');return;}
+  const maxCols=Math.max(...S.rows.map(r=>r.cells.length));
+  const lines=S.rows.map(row=>[...Array(maxCols)].map((_,ci)=>{
+    const c=row.cells[ci]||'';
+    return c.includes(',')||c.includes('"')||c.includes('\n')?'"'+c.replace(/"/g,'""')+'"':c;
+  }).join(','));
+  downloadFile('export.csv','text/csv',lines.join('\n'));
+});
+$('btn-xls').addEventListener('click',()=>{
+  if(!S.rows.length){alert('No rows to export.');return;}
+  const maxCols=Math.max(...S.rows.map(r=>r.cells.length));
+  const cols=[...Array(maxCols)].map((_,i)=>String.fromCharCode(65+i));
+  let html='<html><head><meta charset="UTF-8"><style>td{border:1px solid #ccc;padding:4px 8px;font-family:sans-serif;font-size:12px}</style></head><body><table>';
+  html+=`<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  S.rows.forEach(row=>{html+=`<tr>${[...Array(maxCols)].map((_,ci)=>`<td>${escHtml(row.cells[ci]||'')}</td>`).join('')}</tr>`;});
+  html+='</table></body></html>';
+  downloadFile('export.xls','application/vnd.ms-excel',html);
+});
+function downloadFile(name,type,content){
+  const blob=new Blob([content],{type}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ══════════════════════════════════════════════════════════════
+// FILE / PASTE / DRAG
+// ══════════════════════════════════════════════════════════════
+$('btn-open').addEventListener('click',()=>$('file-inp').click());
+$('file-inp').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=ev=>loadText(ev.target.result); r.readAsText(f); e.target.value='';
+});
+$('btn-paste-toggle').addEventListener('click',()=>{ $('paste-strip').classList.toggle('open'); if($('paste-strip').classList.contains('open')) $('paste-ta').focus(); });
+$('btn-paste-cancel').addEventListener('click',()=>$('paste-strip').classList.remove('open'));
+$('btn-paste-load').addEventListener('click',()=>{ const t=$('paste-ta').value; if(t.trim()){loadText(t);$('paste-strip').classList.remove('open');$('paste-ta').value='';} });
+$('btn-clear').addEventListener('click',()=>{if(confirm('Clear document and all annotations?'))loadText('');});
+$('btn-clear-rows').addEventListener('click',()=>{if(!S.rows.length)return;pushUndo();S.rows=[];renderDoc();renderSheet();scheduleSave();});
+
+const dp=$('doc-panel');
+dp.addEventListener('dragover',e=>{e.preventDefault();dp.classList.add('dragover');});
+dp.addEventListener('dragleave',()=>dp.classList.remove('dragover'));
+dp.addEventListener('drop',e=>{
+  e.preventDefault();dp.classList.remove('dragover');
+  const f=e.dataTransfer.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=ev=>loadText(ev.target.result); r.readAsText(f);
+});
+
+function loadText(text){
+  S={text,omits:[],rows:[]}; undos=[];redos=[];
+  sel={active:false,s:-1,e:-1};
+  refreshUndoBtns(); renderDoc(); renderSheet(); scheduleSave();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ROW TEXT EDIT MODE
+// ══════════════════════════════════════════════════════════════
+let rowEditState=null;    // {rowEl, rStart, originalText}
+let rowPreviewState=null; // {sourceRStart, gapChanges, previews:{rStart→newText}, savedEditText}
+
+// ── Tokenize helpers ──
+function tokensWithPos(text){
+  const words=[]; const re=/\S+/g; let m;
+  while((m=re.exec(text))!==null) words.push({text:m[0],start:m.index,end:m.index+m[0].length});
+  return words;
+}
+function gapAt(text,words,idx){
+  if(!words.length) return idx===0?text:'';
+  if(idx===0) return text.slice(0,words[0].start);
+  if(idx<words.length) return text.slice(words[idx-1].end,words[idx].start);
+  return text.slice(words[words.length-1].end);
+}
+
+// Returns null if non-whitespace changed; [] if no gaps changed; [{gapIdx,before,after}] otherwise
+// (kept for reference — superseded by computeWhitespaceDiff below)
+function computeGapDiff(original,edited){
+  if(original===edited) return [];
+  if(original.replace(/\s/g,'')!==edited.replace(/\s/g,'')) return null;
+  const ow=tokensWithPos(original), ew=tokensWithPos(edited);
+  if(ow.length!==ew.length) return null;
+  for(let i=0;i<ow.length;i++) if(ow[i].text!==ew[i].text) return null;
+  const changes=[];
+  for(let i=0;i<=ow.length;i++){
+    const og=gapAt(original,ow,i), eg=gapAt(edited,ew,i);
+    if(og!==eg) changes.push({gapIdx:i,before:og,after:eg});
+  }
+  return changes;
+}
+
+// ── Non-whitespace-char-gap diff (fixes Bugs 1-3) ──
+// gapIdx k = whitespace run before the k-th non-ws character (k=0 → leading,
+// k=nw.length → trailing).  This level of granularity means "11.FANNI" →
+// "11. FANNI" is correctly detected as a whitespace-only change even though
+// the \S+ word count changes from 1 to 2.
+
+function getNwCharsWithPos(text){
+  const chars=[];
+  for(let i=0;i<text.length;i++) if(!/\s/.test(text[i])) chars.push({char:text[i],start:i,end:i+1});
+  return chars;
+}
+
+// Returns null (content change), [] (no change), or [{gapIdx,before,after}]
+function computeWhitespaceDiff(original,edited){
+  if(original===edited) return [];
+  if(original.replace(/\s/g,'')!==edited.replace(/\s/g,'')) return null;
+  const on=getNwCharsWithPos(original), en=getNwCharsWithPos(edited);
+  if(on.length!==en.length) return null;
+  const changes=[];
+  for(let k=0;k<=on.length;k++){
+    const os=k===0?0:on[k-1].end, oe=k===on.length?original.length:on[k].start;
+    const es=k===0?0:en[k-1].end, ee=k===en.length?edited.length:en[k].start;
+    const og=original.slice(os,oe), eg=edited.slice(es,ee);
+    if(og!==eg) changes.push({gapIdx:k,before:og,after:eg});
+  }
+  return changes;
+}
+
+// Apply whitespace-gap changes to a target text at the same non-ws char gap indices
+function applyWhitespaceDiff(text,changes){
+  if(!changes||!changes.length) return text;
+  const nw=getNwCharsWithPos(text);
+  let result='';
+  for(let k=0;k<=nw.length;k++){
+    const gs=k===0?0:nw[k-1].end, ge=k===nw.length?text.length:nw[k].start;
+    const curGap=text.slice(gs,ge);
+    const ch=changes.find(c=>c.gapIdx===k);
+    result+=ch?ch.after:curGap;
+    if(k<nw.length) result+=nw[k].char;
+  }
+  return result;
+}
+
+// Apply gap changes to a target text (word-based — kept for reference)
+function applyGapDiff(text,changes){
+  if(!changes||!changes.length) return text;
+  const words=tokensWithPos(text); if(!words.length) return text;
+  let result='';
+  for(let i=0;i<=words.length;i++){
+    const ch=changes.find(c=>c.gapIdx===i);
+    const origGap=gapAt(text,words,i);
+    const useGap=ch?ch.after:origGap;
+    if(i<words.length){ result+=useGap; result+=words[i].text; }
+    else result+=useGap;
+  }
+  return result;
+}
+
+// ── Enter/exit edit mode ──
+function enterRowEditMode(rowEl){
+  saveOvSnapshot();
+  const rStart=parseInt(rowEl.dataset.rstart||'0');
+  const rEnd=parseInt(rowEl.dataset.rend||'0');
+  // Use the flattened/displayed text as originalText — rawtext may contain raw
+  // newlines from selText but the row renders them as spaces via flattenText.
+  // Showing the raw version in the textarea causes a mismatch and can produce
+  // newline-corrupted rowWordOrder entries when the user clicks Done unchanged.
+  const selTextFull=ov.selText||S.text.slice(ov.selStart,ov.selEnd);
+  const rwo=ov.rowWordOrder[rStart];
+  const originalText=rwo||flattenText(selTextFull.slice(rStart,rEnd));
+  rowEditState={rowEl,rStart,originalText};
+
+  // Replace cluster/gap spans with textarea, preserve row-start dot
+  rowEl.querySelectorAll('.cv-cluster,.cv-gap,.dv-row-line').forEach(el=>el.remove());
+  rowEl.classList.add('editing');
+
+  const ta=document.createElement('textarea');
+  ta.className='row-edit-ta'; ta.value=originalText; ta.rows=1;
+  rowEl.appendChild(ta);
+  requestAnimationFrame(()=>{
+    ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px';
+    ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);
+    rowEl.scrollIntoView({block:'nearest',behavior:'smooth'});
+  });
+  ta.addEventListener('input',()=>{
+    ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px';
+    refreshEditBar();
+  });
+
+  $('cv-wrap').classList.add('is-row-editing');
+  $('row-edit-bar').className='open';
+  $('row-normal-btns').style.display='flex';
+  $('row-preview-btns').className='';
+  refreshEditBar();
+}
+
+function refreshEditBar(){
+  if(!rowEditState) return;
+  const ta=rowEditState.rowEl.querySelector('textarea'); if(!ta) return;
+  const diff=computeWhitespaceDiff(rowEditState.originalText,ta.value);
+  const applyBtn=$('btn-row-apply');
+  // Apply to all: multi-mode only, and only when there are whitespace-only changes
+  if(ov.mode==='multi'&&diff&&diff.length>0){
+    applyBtn.style.display='';
+    applyBtn.disabled=false;
+    $('row-edit-info').textContent=`Editing — ${diff.length} spacing change${diff.length!==1?'s':''} can propagate to all rows`;
+  } else {
+    applyBtn.style.display='none';
+    if(diff===null) $('row-edit-info').textContent='Editing — content change (stays local)';
+    else $('row-edit-info').textContent='Editing row';
+  }
+}
+
+function exitRowEditMode(save){
+  if(!rowEditState) return;
+  const {rStart,originalText}=rowEditState;
+  if(save){
+    const ta=rowEditState.rowEl.querySelector('textarea');
+    // Flatten newlines so saved text never causes a line-break in the rendered row
+    const newText=ta?flattenText(ta.value.trim()):originalText;
+    const autoText=flattenText(ov.selText?(ov.selText.slice(
+      parseInt(rowEditState.rowEl.dataset.rstart),parseInt(rowEditState.rowEl.dataset.rend))):'');
+    if(newText&&newText!==autoText)
+      ov.rowWordOrder[rStart]=newText;
+    else delete ov.rowWordOrder[rStart]; // cleared back to auto
+  }
+  rowEditState=null;
+  $('cv-wrap').classList.remove('is-row-editing');
+  $('row-edit-bar').className='';
+  buildDivideCanvas();
+}
+
+// ── Apply to all → preview ──
+function startApplyToAll(){
+  if(!rowEditState) return;
+  const ta=rowEditState.rowEl.querySelector('textarea'); if(!ta) return;
+  const edited=ta.value;
+  const gapChanges=computeWhitespaceDiff(rowEditState.originalText,edited);
+  if(!gapChanges||!gapChanges.length) return;
+
+  const {rStart}=rowEditState;
+  const savedEditText=edited;
+
+  // Commit source row text into rowWordOrder
+  ov.rowWordOrder[rStart]=edited;
+
+  // Compute previews for all other rows
+  const selText=ov.selText||S.text.slice(ov.selStart,ov.selEnd);
+  const sorted=[...new Set([0,...(ov.rowStarts||[])])].sort((a,b)=>a-b);
+  const previews={};
+  sorted.forEach((rs,ri)=>{
+    if(rs===rStart) return;
+    const rEnd=ri+1<sorted.length?sorted[ri+1]:selText.length;
+    const rawSeg=selText.slice(rs,rEnd);
+    const curText=ov.rowWordOrder[rs]||flattenText(rawSeg);
+    const newText=applyWhitespaceDiff(curText,gapChanges);
+    if(newText!==curText) previews[rs]=newText;
+  });
+
+  rowEditState=null;
+  $('cv-wrap').classList.remove('is-row-editing');
+  rowPreviewState={sourceRStart:rStart,gapChanges,previews,savedEditText};
+  $('row-normal-btns').style.display='none';
+  $('row-preview-btns').className='open';
+  $('row-edit-info').textContent=`Preview — ${Object.keys(previews).length} row${Object.keys(previews).length!==1?'s':''} will change`;
+  buildDivideCanvas();
+}
+
+function commitPreview(){
+  if(!rowPreviewState) return;
+  saveOvSnapshot();
+  Object.assign(ov.rowWordOrder,rowPreviewState.previews);
+  rowPreviewState=null;
+  $('row-edit-bar').className='';
+  buildDivideCanvas();
+  requestAnimationFrame(()=>{ applySmartAlign(); renderDividers(); });
+}
+
+function revertPreview(){
+  if(!rowPreviewState) return;
+  const {sourceRStart,savedEditText}=rowPreviewState;
+  rowPreviewState=null;
+  $('row-normal-btns').style.display='flex';
+  $('row-preview-btns').className='';
+  // Re-enter edit mode on source row
+  buildDivideCanvas();
+  requestAnimationFrame(()=>{
+    const src=$('cv').querySelector(`.cv-row[data-rstart="${sourceRStart}"]`);
+    if(src){
+      enterRowEditMode(src);
+      const ta=src.querySelector('textarea');
+      if(ta){ ta.value=savedEditText; ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; refreshEditBar(); }
+    }
+  });
+}
+
+// ── Preview diff rendering ──
+function renderPreviewDiffSpans(rowEl,originalText,newText){
+  const origNw=getNwCharsWithPos(originalText), newNw=getNwCharsWithPos(newText);
+  const frag=document.createDocumentFragment();
+  function addGapSpan(text,cls){
+    if(!text&&!cls) return;
+    const s=document.createElement('span'); s.className='cv-gap'+(cls?' '+cls:''); s.textContent=text; frag.appendChild(s);
+  }
+  function addCluster(text){
+    const s=document.createElement('span'); s.className='cv-cluster'; s.textContent=text; frag.appendChild(s);
+  }
+  let k=0;
+  while(k<=newNw.length){
+    const newGapStart=k===0?0:newNw[k-1].end;
+    const newGapEnd=k===newNw.length?newText.length:newNw[k].start;
+    const newGap=newText.slice(newGapStart,newGapEnd);
+    const origGapStart=k===0?0:(k-1<origNw.length?origNw[k-1].end:originalText.length);
+    const origGapEnd=k>=origNw.length?originalText.length:origNw[k].start;
+    const origGap=k<=origNw.length?originalText.slice(origGapStart,origGapEnd):'';
+    const changed=origGap!==newGap;
+    if(changed&&origGap) addGapSpan(origGap,'ws-del');
+    if(newGap||changed) addGapSpan(newGap,changed?'ws-ins':'');
+    if(k<newNw.length){
+      // Merge consecutive non-ws chars into a cluster span
+      let wordEndK=k;
+      while(wordEndK+1<newNw.length&&newNw[wordEndK+1].start===newNw[wordEndK].end) wordEndK++;
+      addCluster(newText.slice(newNw[k].start,newNw[wordEndK].end));
+      k=wordEndK+1;
+    } else { k++; }
+  }
+  rowEl.appendChild(frag);
+}
+
+// ── Double-click to enter edit mode ──
+$('cv').addEventListener('dblclick',e=>{
+  if(e.target.closest('.dv-row-line,.dv-global-handle,.row-start-dot')) return;
+  if(rowPreviewState) return;
+  if(rowEditState) return;
+  const rowEl=e.target.closest('.cv-row'); if(!rowEl) return;
+  if(rowEl.classList.contains('tail')) return;
+  if(ov.mode==='multi'&&!ov.tailClosed) return; // Phase 1 — no edit mode
+  e.stopPropagation();
+  enterRowEditMode(rowEl);
+});
+
+// ── Edit bar buttons ──
+$('btn-row-done').addEventListener('click',()=>exitRowEditMode(true));
+$('btn-row-cancel').addEventListener('click',()=>exitRowEditMode(false));
+$('btn-row-apply').addEventListener('click',startApplyToAll);
+$('btn-preview-commit').addEventListener('click',commitPreview);
+$('btn-preview-revert').addEventListener('click',revertPreview);
+
+// ══════════════════════════════════════════════════════════════
+// EDITOR OMIT — omit editor-selected clusters in either phase
+// ══════════════════════════════════════════════════════════════
+function doEditorOmit(){
+  const selectedSpans=[...$('cv').querySelectorAll('.cv-cluster.editor-sel')];
+  if(!selectedSpans.length) return;
+
+  // Collect S.text ranges to omit
+  const toOmit=[];
+  selectedSpans.forEach(span=>{
+    const rowEl=span.closest('.cv-row'); if(!rowEl) return;
+    const rStart=parseInt(rowEl.dataset.rstart||'0');
+    const isTail=rowEl.classList.contains('tail');
+    let sStart=-1,sEnd=-1;
+
+    if(!isTail){
+      // Finalized row: data-sstart/send set by annotateClusterSPositions
+      sStart=parseInt(span.dataset.sstart||'-1');
+      sEnd=parseInt(span.dataset.send||'-1');
+    } else {
+      // Tail row (Phase 1): map through cleanPosMap
+      const cs=parseInt(span.dataset.charStart||'0');
+      const ce=parseInt(span.dataset.charEnd||'0');
+      const si=rStart+cs, ei=rStart+ce-1;
+      if(ov.cleanPosMap&&si<ov.cleanPosMap.length){
+        sStart=ov.cleanPosMap[si];
+        sEnd=(ei<ov.cleanPosMap.length?ov.cleanPosMap[ei]:ov.cleanPosMap[ov.cleanPosMap.length-1])+1;
+      }
+    }
+    if(sStart>=0&&sEnd>sStart) toOmit.push({start:sStart,end:sEnd});
+  });
+  if(!toOmit.length) return;
+
+  // Merge overlapping ranges
+  toOmit.sort((a,b)=>a.start-b.start);
+  const merged=[];
+  for(const r of toOmit){
+    if(merged.length&&r.start<=merged[merged.length-1].end)
+      merged[merged.length-1].end=Math.max(merged[merged.length-1].end,r.end);
+    else merged.push({...r});
+  }
+
+  // Snapshot for both overlay undo and main doc undo
+  saveOvSnapshot();
+  pushUndo();
+
+  // Apply omits
+  merged.forEach(r=>{
+    S.omits=S.omits.filter(o=>!(o.start<r.end&&o.end>r.start));
+    S.omits.push({id:uid(),start:r.start,end:r.end});
+  });
+
+  // Rebuild selText + cleanPosMap; remap rowStarts
+  const oldMap=[...(ov.cleanPosMap||[])];
+  ov.selText=getCleanSelText(ov.selStart,ov.selEnd);
+  ov.cleanPosMap=buildCleanPosMap(ov.selStart,ov.selEnd);
+  if(ov.rowStarts&&ov.rowStarts.length)
+    ov.rowStarts=remapRowStarts(oldMap,ov.cleanPosMap,ov.rowStarts);
+
+  buildDivideCanvas();
+  // Reflect omit in main doc view (it's behind the overlay but keeps S in sync)
+  renderDoc();
+}
+
+// ══════════════════════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  const cmd=e.metaKey||e.ctrlKey;
+  if(cmd&&e.key==='z'&&!e.shiftKey){e.preventDefault();doUndo();return;}
+  if((cmd&&e.key==='Z')||(cmd&&e.key==='z'&&e.shiftKey)){e.preventDefault();doRedo();return;}
+  if($('overlay-back').classList.contains('open')){
+    if(e.key==='Escape'){closeOverlay();return;}
+    if(e.key==='Enter'){confirmDivide();return;}
+    if(e.key==='o'||e.key==='O'||(cmd&&(e.key==='o'||e.key==='O'))){e.preventDefault();doEditorOmit();return;}
+    return;
+  }
+  if(e.key==='o'||e.key==='O'||(cmd&&e.key==='o')){e.preventDefault();doOmit();return;}
+  if(e.key==='u'||e.key==='U'||(cmd&&e.key==='u')){e.preventDefault();doUomit();return;}
+  if(e.key==='1'||(cmd&&e.key==='1')){e.preventDefault();openDivide('single');return;}
+  if(e.key==='2'||(cmd&&e.key==='2')){e.preventDefault();openDivide('multi');return;}
+});
+$('btn-omit').addEventListener('click',doOmit);
+$('btn-uomit').addEventListener('click',doUomit);
+$('btn-div1').addEventListener('click',()=>openDivide('single'));
+$('btn-div2').addEventListener('click',()=>openDivide('multi'));
+$('btn-undo').addEventListener('click',doUndo);
+$('btn-redo').addEventListener('click',doRedo);
+$('ov-cancel').addEventListener('click',closeOverlay);
+$('overlay-back').addEventListener('click',e=>{if(e.target===$('overlay-back'))closeOverlay();});
+
+// ══════════════════════════════════════════════════════════════
+// INDEXEDDB
+// ══════════════════════════════════════════════════════════════
+let db=null,saveTimer=null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>dbSave(),800); }
+function dbInit(){
+  const req=indexedDB.open('DocToSheet_v1',1);
+  req.onupgradeneeded=e=>e.target.result.createObjectStore('kv',{keyPath:'k'});
+  req.onsuccess=e=>{db=e.target.result;dbLoad();};
+  req.onerror=()=>loadText(DEMO);
+}
+function dbSave(){ if(!db)return; db.transaction('kv','readwrite').objectStore('kv').put({k:'state',v:S}); }
+function dbLoad(){
+  if(!db){loadText(DEMO);return;}
+  const req=db.transaction('kv','readonly').objectStore('kv').get('state');
+  req.onsuccess=e=>{ const d=e.target.result; if(d&&d.v&&d.v.text){S=d.v;renderDoc();renderSheet();}else loadText(DEMO); };
+  req.onerror=()=>loadText(DEMO);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+dbInit();
+refreshUndoBtns();
+renderSheet();
+</script>
+</body>
+</html>
