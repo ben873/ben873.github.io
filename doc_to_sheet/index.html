@@ -32,6 +32,27 @@
   --ui:'DM Sans',system-ui,sans-serif;
   --mono:'JetBrains Mono','Courier New',monospace;
 }
+html.dark{
+  --bg:#6F7378;
+  --surface:#5a5e63;
+  --surface-2:#52565b;
+  --border:#4a4e53;
+  --border-strong:#3c4044;
+  --text:#f0ede8;
+  --text-2:#c8c4bc;
+  --dim:#9a9690;
+  --accent:#7eb8e8;
+  --accent-mid:#9acbf0;
+  --accent-light:rgba(126,184,232,.12);
+  --accent-glow:rgba(126,184,232,.18);
+  --override:#e8825a;
+  --override-light:rgba(232,130,90,.12);
+  --omit-bg:rgba(232,130,90,.14);
+  --omit-fg:#f0b090;
+  --row-even:rgba(0,0,0,.12);
+  --row-odd:transparent;
+  --sel:rgba(126,184,232,.22);
+}
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--ui);background:var(--bg);color:var(--text);display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased}
 #app{display:flex;flex-direction:column;height:100vh}
@@ -234,6 +255,78 @@ footer{padding:5px 20px;font-size:10px;letter-spacing:.02em;color:var(--dim);bor
 
 /* dragover */
 #doc-panel.dragover #doc-view{outline:2px dashed rgba(26,58,92,.45);outline-offset:-3px}
+
+/* ── dark mode toggle ── */
+.theme-btn{
+  width:34px;height:20px;border-radius:10px;border:1px solid var(--border-strong);
+  background:var(--surface-2);cursor:pointer;position:relative;flex-shrink:0;
+  transition:background .2s,border-color .2s;padding:0;outline:none
+}
+.theme-btn::after{
+  content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;
+  border-radius:50%;background:var(--dim);transition:transform .2s,background .2s
+}
+html.dark .theme-btn{background:var(--accent-light);border-color:var(--accent)}
+html.dark .theme-btn::after{transform:translateX(14px);background:var(--accent)}
+
+/* ── help button (header) ── */
+.help-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);
+  background:var(--accent-light);color:var(--accent);font-size:13px;font-weight:700;
+  cursor:pointer;flex-shrink:0;font-family:var(--ui);transition:background .1s,color .1s;
+  line-height:1
+}
+.help-btn:hover{background:var(--accent);color:#fff}
+html.dark .help-btn:hover{color:var(--bg)}
+
+/* ── help modal ── */
+#help-back{
+  display:none;position:fixed;inset:0;background:rgba(10,10,8,.7);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:400;align-items:center;justify-content:center
+}
+#help-back.open{display:flex}
+#help-modal{
+  background:var(--surface);border-radius:6px;border-top:3px solid var(--accent);
+  box-shadow:0 40px 100px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.08);
+  width:min(720px,94vw);max-height:86vh;display:flex;flex-direction:column;overflow:hidden
+}
+.help-modal-head{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 22px;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.help-modal-head h2{font-size:14px;font-weight:700;flex:1;letter-spacing:.02em;color:var(--text)}
+.help-close{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;cursor:pointer;color:var(--dim);font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .1s;
+  line-height:1;font-family:var(--ui)
+}
+.help-close:hover{background:var(--border);color:var(--text)}
+.help-body{overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:22px}
+.help-section{display:flex;flex-direction:column;gap:8px}
+.help-section h3{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+  color:var(--accent);margin-bottom:2px;font-family:var(--ui)
+}
+.help-section p,.help-section li{
+  font-size:12.5px;line-height:1.75;color:var(--text-2);font-family:var(--ui)
+}
+.help-section ul{padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.help-card{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:4px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:6px
+}
+.help-card h4{font-size:11px;font-weight:700;color:var(--text);letter-spacing:.02em;font-family:var(--ui)}
+.help-card p{font-size:12px;color:var(--text-2);line-height:1.65;font-family:var(--ui)}
+.help-kbd{
+  display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;
+  font-family:var(--mono);background:var(--surface-2);border:1px solid var(--border-strong);
+  color:var(--text);margin:0 1px;vertical-align:middle
+}
+.help-divider{height:1px;background:var(--border)}
 </style>
 </head>
 <body>
@@ -247,7 +340,110 @@ footer{padding:5px 20px;font-size:10px;letter-spacing:.02em;color:var(--dim);bor
   <button class="hbtn" id="btn-clear">Clear</button>
   <span class="hsep"></span>
   <span id="mode-badge"></span>
+  <button class="theme-btn" id="btn-theme" title="Toggle dark / light mode" aria-label="Toggle dark mode"></button>
+  <button class="help-btn" id="btn-help" title="Help" aria-label="Open help">?</button>
 </header>
+
+<!-- Help modal -->
+<div id="help-back">
+  <div id="help-modal">
+    <div class="help-modal-head">
+      <h2>Doc to Sheet — How to use</h2>
+      <button class="help-close" id="help-close" aria-label="Close help">×</button>
+    </div>
+    <div class="help-body">
+
+      <div class="help-section">
+        <h3>Overview</h3>
+        <p>Doc to Sheet lets you take any structured text document — a screenplay, script, transcript, report — and turn it into a clean spreadsheet by selecting text and defining column boundaries. Everything runs locally in your browser; nothing is ever uploaded.</p>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Step 1 — Load your document</h3>
+        <ul>
+          <li><strong>Open File</strong> — load a <span class="help-kbd">.txt</span>, <span class="help-kbd">.md</span>, <span class="help-kbd">.docx</span>, or <span class="help-kbd">.pdf</span> file from disk. Formatting (bold, italic, heading size) is preserved in the document view.</li>
+          <li><strong>Paste Text</strong> — paste raw text directly into the editor strip and click Load.</li>
+          <li>Drag and drop a file onto the document panel at any time.</li>
+        </ul>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Step 2 — Mark what to keep or skip</h3>
+        <ul>
+          <li>Click a word to select it. Click + drag across words to extend the selection. The selection is shown highlighted.</li>
+          <li><strong>Omit</strong> — strikethrough the selected text so it is excluded from output rows.</li>
+          <li><strong>Un-omit</strong> — restore previously omitted text.</li>
+        </ul>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Step 3 — Divide text into columns</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <h4>Single Row → Cols</h4>
+            <p>Select a single line of text and open this mode to split it into columns. Click any whitespace gap on row 1 to place a column divider. Drag a divider to move it. Double-click to remove it.</p>
+          </div>
+          <div class="help-card">
+            <h4>Multi Rows → Cols</h4>
+            <p><strong>Phase 1:</strong> click the first word of each row to mark where rows start. A sienna border shows the open "tail" row. Click <em>Close tail</em> when all rows are marked.<br><br><strong>Phase 2:</strong> place column dividers exactly as in Single Row mode. Dividers auto-align to matching gaps in every row.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Working with dividers</h3>
+        <ul>
+          <li><strong>Row 1 (reference row):</strong> click a gap to add a divider · drag the diamond handle to move · double-click to delete.</li>
+          <li><strong>Rows 2+:</strong> dividers auto-align to the structurally equivalent gap. Drag a row's divider line directly to override it for that row only — it turns <span style="color:var(--override);font-weight:600">sienna</span> to show the override. Right-click a row divider to reset it back to auto-alignment.</li>
+          <li>Use <strong>Delimiter</strong> to auto-place dividers after a character you type (e.g. <span class="help-kbd">:</span> or <span class="help-kbd">—</span>).</li>
+          <li>Use <strong>Show gaps</strong> to highlight all snap-zones in the canvas.</li>
+        </ul>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Step 4 — Confirm and export</h3>
+        <ul>
+          <li>Click <strong>Confirm</strong> in the divide overlay. The row(s) appear in the Spreadsheet Preview on the right.</li>
+          <li>Click <strong>Export CSV</strong> or <strong>Export XLS</strong> to download the sheet.</li>
+          <li>Use <strong>Clear Rows</strong> in the action bar to wipe the sheet and start over.</li>
+        </ul>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Editing rows in the divide canvas</h3>
+        <ul>
+          <li>Double-click any row text to enter inline edit mode. Fix typos or adjust spacing without leaving the divide editor.</li>
+          <li>After editing a row, click <strong>Apply to all…</strong> to propagate whitespace changes to every matching row automatically.</li>
+          <li>Use <strong>Undo</strong> inside the overlay to step back through divider changes.</li>
+        </ul>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <h3>Keyboard shortcuts</h3>
+        <ul>
+          <li><span class="help-kbd">O</span> or <span class="help-kbd">⌘O</span> — Omit selection</li>
+          <li><span class="help-kbd">U</span> or <span class="help-kbd">⌘U</span> — Un-omit selection</li>
+          <li><span class="help-kbd">1</span> or <span class="help-kbd">⌘1</span> — Single Row divide</li>
+          <li><span class="help-kbd">2</span> or <span class="help-kbd">⌘2</span> — Multi Row divide</li>
+          <li><span class="help-kbd">⌘Z</span> — Undo &nbsp;·&nbsp; <span class="help-kbd">⌘⇧Z</span> — Redo</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <div id="paste-strip">
   <textarea id="paste-ta" placeholder="Paste document text here…"></textarea>
@@ -2108,6 +2304,39 @@ function dbLoad(){
   req.onsuccess=e=>{ const d=e.target.result; if(d&&d.v&&d.v.text){S=d.v;if(!S.spans)S.spans=[];renderDoc();renderSheet();}else renderDoc();renderSheet(); };
   req.onerror=()=>renderDoc();renderSheet();
 }
+
+// ══════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════════════════════
+(function(){
+  const btn=$('btn-theme');
+  const stored=localStorage.getItem('dts-theme');
+  if(stored==='dark') document.documentElement.classList.add('dark');
+  btn.addEventListener('click',()=>{
+    const isDark=document.documentElement.classList.toggle('dark');
+    localStorage.setItem('dts-theme',isDark?'dark':'light');
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
+// HELP MODAL
+// ══════════════════════════════════════════════════════════════
+(function(){
+  const back=$('help-back');
+  const closeBtn=$('help-close');
+  const helpBtn=$('btn-help');
+
+  function openHelp(){ back.classList.add('open'); }
+  function closeHelp(){ back.classList.remove('open'); localStorage.setItem('dts-help-seen','1'); }
+
+  helpBtn.addEventListener('click', openHelp);
+  closeBtn.addEventListener('click', closeHelp);
+  back.addEventListener('click', e=>{ if(e.target===back) closeHelp(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&back.classList.contains('open')) closeHelp(); });
+
+  // Show on first-ever load
+  if(!localStorage.getItem('dts-help-seen')) openHelp();
+})();
 
 // ══════════════════════════════════════════════════════════════
 // INIT
