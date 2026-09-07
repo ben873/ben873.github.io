@@ -1,0 +1,492 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JFEGYKE1XG"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JFEGYKE1XG');
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How Do I Prepare My Indie Film’s Sound for Festival Submissions? | Ben Dotson</title>
+    <meta name="description" content="A practical guide to sound for indie-film festival submissions, including work-in-progress screeners, stereo versus surround, DCP planning, reconforms, and published requirements from major festivals.">
+    <link rel="canonical" href="https://bendotsonsound.com/resources/indie-film-festival-submission-audio-requirements.html">
+    <meta property="og:title" content="How Do I Prepare My Indie Film’s Sound for Festival Submissions?">
+    <meta property="og:description" content="A practical guide to sound for indie-film festival submissions, including work-in-progress screeners, stereo versus surround, DCP planning, reconforms, and published requirements from major festivals.">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="https://bendotsonsound.com/images/bds.jpg">
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .article-page #content_area { padding-bottom: 4rem; }
+      .article-shell { overflow: hidden; background: #000; border-radius: 15px; }
+      .article-header {
+        padding: clamp(2rem, 6vw, 4.75rem) clamp(1.25rem, 7vw, 5.5rem);
+        background: #171717;
+        border-bottom: 1px solid #3a3a3a;
+      }
+      .article-eyebrow {
+        margin: 0 0 1rem;
+        color: #b9b9b9;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+      }
+      .article-header h1 {
+        max-width: 18ch;
+        margin: 0;
+        color: #fff;
+        font-size: clamp(2rem, 5.4vw, 4rem);
+        line-height: 1.06;
+        letter-spacing: -0.025em;
+      }
+      .article-copy {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 5vw, 3rem);
+        color: #f2f2f2;
+        font-size: 1.08rem;
+      }
+      .article-copy > p:first-child {
+        margin-top: 0;
+        font-size: 1.25rem;
+        line-height: 1.55;
+      }
+      .article-copy h2 {
+        margin: 3.25rem 0 1rem;
+        color: #fff;
+        font-size: clamp(1.45rem, 3vw, 2rem);
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .article-copy h3 {
+        margin: 2rem 0 0.75rem;
+        color: #fff;
+        font-size: 1.2rem;
+      }
+      .article-copy p, .article-copy li { line-height: 1.72; }
+      .article-copy ul { margin: 1.5rem 0 2rem; padding-left: 1.4rem; }
+      .article-copy li { margin-bottom: 0.45rem; }
+      .festival-table-wrap {
+        width: 100%;
+        margin: 2rem 0;
+        overflow-x: auto;
+        border: 1px solid #444;
+        border-radius: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .festival-table-wrap table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: collapse;
+        background: #111;
+        font-size: 0.92rem;
+      }
+      .festival-table-wrap th, .festival-table-wrap td {
+        padding: 0.85rem;
+        border-right: 1px solid #3a3a3a;
+        border-bottom: 1px solid #3a3a3a;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.45;
+      }
+      .festival-table-wrap th {
+        position: sticky;
+        top: 0;
+        background: #2b2b2b;
+        color: #fff;
+        font-weight: 700;
+      }
+      .festival-table-wrap th:first-child,
+      .festival-table-wrap td:first-child {
+        position: sticky;
+        left: 0;
+        min-width: 95px;
+        background: #1d1d1d;
+      }
+      .article-related {
+        margin: 0 clamp(1.25rem, 7vw, 5.5rem);
+        padding: 2rem 0;
+        border-top: 1px solid #3a3a3a;
+        border-bottom: 1px solid #3a3a3a;
+      }
+      .article-related h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+      .article-related ul { margin: 0; padding-left: 1.2rem; }
+      .article-related a, .article-footer a {
+        text-decoration: underline;
+        text-decoration-color: #777;
+        text-underline-offset: 0.2em;
+      }
+      .article-footer { padding: 1.5rem clamp(1.25rem, 7vw, 5.5rem) 2.5rem; }
+      .article-footer p { margin: 0; }
+      @media screen and (max-width: 680px) {
+        body.article-page { font-size: 16px; line-height: 1.4; }
+        .article-page #container { width: calc(100% - 24px); }
+        .article-header h1 { font-size: clamp(2rem, 10vw, 3rem); }
+        .article-copy { font-size: 1rem; }
+        .article-copy > p:first-child { font-size: 1.12rem; }
+        .festival-table-wrap::after {
+          display: block;
+          padding: 0.65rem 0.85rem;
+          color: #b9b9b9;
+          background: #171717;
+          content: "Scroll horizontally to compare festivals";
+          font-size: 0.82rem;
+        }
+      }
+    </style>
+    <link rel="icon" type="image/png" href="../images/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
+    <link rel="shortcut icon" href="../images/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../images/apple-touch-icon.png" />
+    <link rel="manifest" href="../images/site.webmanifest" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "How Do I Prepare My Indie Film\u2019s Sound for Festival Submissions?",
+      "author": {"@type": "Person", "name": "Ben Dotson"},
+      "publisher": {"@type": "Person", "name": "Ben Dotson"},
+      "mainEntityOfPage": "https://bendotsonsound.com/resources/indie-film-festival-submission-audio-requirements.html"
+    }
+    </script>
+  </head>
+  <body class="interior article-page">
+    <div id="container">
+      <div id="header">
+        <div class="dropdown">
+          <div class="dropbtn" id="menubutton">
+            <img src="../images/menucon-white.png" class="menucon" alt="Menu">
+          </div>
+          <div class="dropdown-content" id="drophover">
+            <a href="../index.html">HOME</a>
+            <a href="../work.html">WORK</a>
+            <a href="../credits.html">CREDITS</a>
+            <a href="../services.html">SERVICES</a>
+            <a href="../contact.html">CONTACT</a>
+            <a href="https://www.imdb.com/name/nm1304706/" target="_blank" rel="noopener">IMDB</a>
+          </div>
+        </div>
+        <div id="navbar">
+          <a href="../index.html">HOME</a>
+          <a href="../work.html">WORK</a>
+          <a href="../credits.html">CREDITS</a>
+          <a href="../services.html">SERVICES</a>
+          <a href="../contact.html">CONTACT</a>
+          <a href="https://www.imdb.com/name/nm1304706/" target="_blank" rel="noopener">IMDB</a>
+        </div>
+      </div>
+      <main id="content_area">
+        <article class="article-shell">
+          <header class="article-header">
+            <p class="article-eyebrow">FILM FESTIVAL SOUND GUIDE</p>
+            <h1>How Do I Prepare My Indie Film’s Sound for Festival Submissions?</h1>
+          </header>
+          <div class="article-copy">
+<p>If you're finishing an independent feature and preparing for festival submissions, one of the most confusing questions is:</p>
+<p><strong>How finished does the sound need to be before I submit?</strong></p>
+<p>The answer depends on the festival.</p>
+<p>Some major festivals accept works in progress with temporary or incomplete sound. Some allow you to update the screener later. Others only review the version you initially submit.</p>
+<p>And there is another important distinction:</p>
+<p><strong>The audio requirements for submitting a film are not necessarily the same as the audio requirements for exhibiting it if you're selected.</strong></p>
+<p>That matters because a stereo submission may be perfectly acceptable for consideration while the eventual theatrical presentation may require or strongly prefer a surround master.</p>
+<p>If your film may ultimately need 5.1, it's worth planning for that before the festival acceptance email arrives.</p>
+<h2 id="major-festival-sound-requirements">Major festival sound requirements</h2>
+<p>Festival specifications change from year to year, so always confirm the current rules directly with the festival before creating final deliverables.</p>
+<p>But the differences between the major festivals illustrate why it's useful to plan your sound-post workflow early.</p>
+<div class="festival-table-wrap" role="region" aria-label="Major festival sound requirements" tabindex="0">
+<table>
+<thead>
+<tr>
+<th>Festival</th>
+<th>Work in progress accepted?</th>
+<th>Can the screener be updated?</th>
+<th>Submission-stage audio</th>
+<th>Exhibition audio if selected</th>
+<th>Surround status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Sundance</strong></td>
+<td>Yes. Unfinished films, including films with incomplete sound, are commonly submitted.</td>
+<td>Updated versions may be possible, but the originally submitted version may already have been viewed.</td>
+<td>Final surround sound is not required for the initial screener.</td>
+<td>Published theatrical specifications call for a 5.1 surround DCP.</td>
+<td><strong>Required in published theatrical specs</strong></td>
+</tr>
+<tr class="even">
+<td><strong>SXSW</strong></td>
+<td>Yes. SXSW specifically allows rough cuts, including versions with temporary sound or color.</td>
+<td>No. SXSW states that it reviews the first submitted version only.</td>
+<td>A secure online screener is used for consideration.</td>
+<td>A final DCP is required if selected. Public rules do not specify a blanket mandatory channel configuration.</td>
+<td><strong>Not publicly specified</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Tribeca</strong></td>
+<td>Yes. Rough cuts and works in progress are accepted, including films with temporary sound.</td>
+<td>Yes, within the applicable submission period, using the same screener link.</td>
+<td>Streaming screener.</td>
+<td>Final exhibition specifications are supplied to selected filmmakers.</td>
+<td><strong>Not publicly specified</strong></td>
+</tr>
+<tr class="even">
+<td><strong>TIFF</strong></td>
+<td>TIFF accepts online screeners for selection.</td>
+<td>TIFF states that only one submitted version will be reviewed.</td>
+<td>Online submission screener.</td>
+<td>The selected filmmaker must supply an exhibition master in the format TIFF specifies.</td>
+<td><strong>Not publicly specified</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Cannes</strong></td>
+<td>Yes. Cannes accepts working copies.</td>
+<td>No. A working copy submitted for preselection cannot later simply be replaced with the finished version.</td>
+<td>Online preselection files may contain stereo PCM, AAC or similar audio.</td>
+<td>Selected films require an appropriate theatrical exhibition master such as DCP.</td>
+<td><strong>Not publicly specified</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Venice</strong></td>
+<td>WIP materials may be used in appropriate circumstances.</td>
+<td>Replacement of final festival materials is tightly controlled.</td>
+<td>Selection materials can be submitted digitally.</td>
+<td>Venice explicitly prefers 5.1 or 7.1 and discourages stereo playback in large theaters.</td>
+<td><strong>5.1 / 7.1 strongly preferred</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Berlinale</strong></td>
+<td>Digital screeners are accepted.</td>
+<td>Replacement rules vary by section.</td>
+<td>Stereo screeners are acceptable.</td>
+<td>Berlinale publicly supports both stereo and 5.1 festival media and may upmix stereo material for playback.</td>
+<td><strong>Stereo accepted / 5.1 supported</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The important lesson isn't that every festival requires 5.1.</p>
+<p>They don't.</p>
+<p>The lesson is that <strong>a festival submission and a festival exhibition master are two different stages of post-production.</strong></p>
+<h2 id="you-may-not-need-a-finished-surround-mix-to-submit">You may not need a finished surround mix to submit</h2>
+<p>If a festival accepts works in progress, you may be able to submit before the entire sound-post process is complete.</p>
+<p>That can be useful when a submission deadline arrives before the film's actual finishing schedule.</p>
+<p>A submission version might contain:</p>
+<ul>
+<li>edited and intelligible dialogue</li>
+<li>important sound effects</li>
+<li>major creative sound-design moments</li>
+<li>temporary or partially completed backgrounds</li>
+<li>music</li>
+<li>a strong stereo review mix</li>
+</ul>
+<p>That may be enough for programmers to properly experience the film.</p>
+<p>Meanwhile, sound post can continue.</p>
+<p>The mistake is assuming that because a stereo screener was acceptable for submission, the soundtrack is therefore finished.</p>
+<p>Those are two different questions.</p>
+<h2 id="a-stereo-submission-can-still-be-part-of-a-surround-workflow">A stereo submission can still be part of a surround workflow</h2>
+<p>Suppose you're preparing a feature for Sundance.</p>
+<p>You don't necessarily need to rush through the entire final 5.1 mix simply because the submission deadline is approaching.</p>
+<p>You might submit a strong stereo version while continuing to build the full soundtrack.</p>
+<p>The sound-post process can then continue through:</p>
+<ul>
+<li>dialogue editorial</li>
+<li>ADR where necessary</li>
+<li>backgrounds</li>
+<li>sound-effects editorial</li>
+<li>Foley</li>
+<li>sound design</li>
+<li>surround preparation</li>
+<li>final 5.1 re-recording mix</li>
+<li>stereo version</li>
+<li>stems and other deliverables</li>
+</ul>
+<p>That can be a perfectly sensible schedule.</p>
+<p>What you don't want is to reach selection and discover that the existing sound-effects edit was never constructed in a way that supports the surround mix you're now required to deliver.</p>
+<h2 id="you-cant-create-a-surround-soundscape-at-the-dcp-stage">You can't create a surround soundscape at the DCP stage</h2>
+<p>This is an important distinction.</p>
+<p>Creating a 5.1 DCP is not the same thing as creating a 5.1 soundtrack.</p>
+<p>If your picture edit contains one stereo background for each scene, you can technically route that material into a surround environment.</p>
+<p>But that does not necessarily create a properly built surround soundscape.</p>
+<p>A residential exterior may need separate traffic, birds, wind, neighborhood activity or other elements that can be distributed around the audience.</p>
+<p>An interior restaurant may need independent crowd, kitchen, dish, HVAC and exterior elements.</p>
+<p>A vehicle that needs to move through the theater needs to exist independently rather than being embedded inside a stereo ambience.</p>
+<p>Those decisions begin during <strong>sound-effects editorial and sound design</strong>, not during DCP creation.</p>
+<p>So if a festival's eventual exhibition format requires or strongly favors surround, the best time to think about surround is during the sound edit.</p>
+<p>Not after selection.</p>
+<h2 id="work-in-progress-submissions-can-be-very-useful">Work-in-progress submissions can be very useful</h2>
+<p>Submitting a WIP is not inherently a compromise.</p>
+<p>It can be a strategic way to keep the festival calendar moving while post-production continues.</p>
+<p>The important question is whether the version being submitted represents the film well enough to be judged.</p>
+<p>If the dialogue is difficult to understand, a key emotional scene has no sound design, or music transitions are unfinished enough to distract from the story, submitting early can hurt the film.</p>
+<p>But if the major creative work is in place and the remaining work is refinement, additional editorial and final mixing, a WIP may represent the movie perfectly well.</p>
+<p>Different festivals handle this differently.</p>
+<h2 id="read-the-replacement-rules-carefully">Read the replacement rules carefully</h2>
+<p>This is one of the most important things to check before submitting a WIP.</p>
+<p>Some festivals allow updated screeners.</p>
+<p>Others don't.</p>
+<p>At Tribeca, for example, a filmmaker may be able to update the same screener during the submission period.</p>
+<p>At SXSW, the first submitted version is the version programmers evaluate.</p>
+<p>Cannes likewise warns filmmakers that submitting a working copy does not mean they can later replace it with the finished version for preselection.</p>
+<p>That changes the decision.</p>
+<p>If the festival only reviews one version, the question becomes:</p>
+<p><strong>Is this cut good enough to represent the film now?</strong></p>
+<p>If updates are permitted, you may have more flexibility to continue improving the film during the submission window.</p>
+<h2 id="sound-post-doesnt-have-to-stop-while-youre-submitting">Sound post doesn't have to stop while you're submitting</h2>
+<p>A common misconception is that festival submission creates a hard finishing boundary.</p>
+<p>It doesn't necessarily.</p>
+<p>You can submit one version while continuing to work on another.</p>
+<p>For example:</p>
+<p><strong>Festival Cut A</strong></p>
+<ul>
+<li>picture substantially locked</li>
+<li>dialogue cleaned and edited</li>
+<li>important effects and design in place</li>
+<li>stereo review mix</li>
+<li>submitted to festival</li>
+</ul>
+<p>Meanwhile:</p>
+<p><strong>Sound Post Continues</strong></p>
+<ul>
+<li>detailed dialogue editorial</li>
+<li>complete backgrounds</li>
+<li>Foley</li>
+<li>additional sound design</li>
+<li>surround preparation</li>
+</ul>
+<p>Then:</p>
+<p><strong>Final Cut B</strong></p>
+<ul>
+<li>picture revisions incorporated</li>
+<li>sound session reconformed</li>
+<li>final 5.1 mix</li>
+<li>final stereo</li>
+<li>stems</li>
+<li>DCP / exhibition deliverables</li>
+</ul>
+<p>This kind of workflow is very common when festival deadlines arrive before the true end of post-production.</p>
+<h2 id="what-if-picture-changes-after-sound-post-has-started">What if picture changes after sound post has started?</h2>
+<p>This is where professional reconforming becomes valuable.</p>
+<p>Suppose you submit your film and then decide to shorten a scene, replace a shot or restructure part of the ending.</p>
+<p>The sound editorial already completed against the previous picture does not necessarily need to be rebuilt from scratch.</p>
+<p>If the turnover has been prepared correctly, the old and new picture edits can be compared and the existing sound session can be reconformed to the revised cut.</p>
+<p>This is one reason I request <strong>video EDLs</strong> at picture turnover.</p>
+<p>They give the sound department a machine-readable map of the edit.</p>
+<p>If a revised picture arrives, we can identify what moved, what changed and what stayed the same, then move the existing sound work accordingly.</p>
+<p>Picture changes still create work.</p>
+<p>But they're very different from manually rebuilding the soundtrack every time the filmmaker exports a new cut.</p>
+<h2 id="keep-sound-and-picture-versioning-organized">Keep sound and picture versioning organized</h2>
+<p>If you're submitting while post continues, clear versioning becomes extremely important.</p>
+<p>Don't call every export:</p>
+<p><strong>FINAL.mov</strong></p>
+<p>Use explicit version names.</p>
+<p>For example:</p>
+<ul>
+<li>Feature_FestivalCut_v01</li>
+<li>Feature_FestivalCut_v02</li>
+<li>Feature_PictureLock_v03</li>
+<li>Feature_FinalMix_v04</li>
+</ul>
+<p>The exact naming convention matters less than everyone knowing which picture version the sound session currently matches.</p>
+<p>Whenever picture changes, the sound team should receive:</p>
+<ul>
+<li>the new reference picture</li>
+<li>new video EDLs</li>
+<li>any updated audio turnover material if necessary</li>
+<li>clear notes identifying major changes</li>
+</ul>
+<p>That makes continuing sound post much safer.</p>
+<h2 id="should-i-finish-sound-before-submitting">Should I finish sound before submitting?</h2>
+<p>There isn't one answer.</p>
+<p>It depends on three things:</p>
+<h3 id="1-how-finished-does-the-submission-need-to-feel">1. How finished does the submission need to feel?</h3>
+<p>Festival programmers are evaluating the film, not grading your post-production paperwork.</p>
+<p>But sound has an enormous effect on how professional and emotionally effective a film feels.</p>
+<p>If unfinished sound is distracting from the movie, keep working.</p>
+<h3 id="2-does-the-festival-allow-a-wip">2. Does the festival allow a WIP?</h3>
+<p>Read the rules carefully.</p>
+<p>Some explicitly accept unfinished work.</p>
+<p>Others may accept it technically but only review the first version submitted.</p>
+<h3 id="3-what-will-you-need-if-youre-selected">3. What will you need if you're selected?</h3>
+<p>This is where filmmakers sometimes plan too narrowly.</p>
+<p>You may only need a stereo screener today.</p>
+<p>But if your likely exhibition path includes a festival with surround theatrical requirements, you should structure the sound post so that reaching 5.1 later is part of the plan rather than an emergency.</p>
+<h2 id="if-youre-targeting-sundance-plan-for-surround-before-acceptance">If you're targeting Sundance, plan for surround before acceptance</h2>
+<p>Sundance is a useful example because its published theatrical technical specifications explicitly call for a 5.1 surround DCP.</p>
+<p>That does not mean the festival submission screener needs to be a completed 5.1 master.</p>
+<p>It means that if Sundance is a serious target, the sound-post schedule should already account for eventually producing one.</p>
+<p>The difference is important.</p>
+<p>You don't necessarily need to <strong>finish</strong> 5.1 before submitting.</p>
+<p>But you should avoid making editorial decisions that make building 5.1 unnecessarily difficult later.</p>
+<h2 id="venice-makes-the-same-point-in-a-different-way">Venice makes the same point in a different way</h2>
+<p>Venice explicitly prefers 5.1 or 7.1 exhibition material and discourages stereo playback in large theaters.</p>
+<p>That is useful information even if your submission screener is stereo.</p>
+<p>It tells you something about the environment in which the film may eventually be experienced.</p>
+<p>A theatrical soundtrack is not simply a louder version of the review mix.</p>
+<p>It has to work in a room.</p>
+<h2 id="what-if-i-dont-know-which-festivals-ill-get-into">What if I don't know which festivals I'll get into?</h2>
+<p>That's normal.</p>
+<p>Most independent filmmakers don't know their exact final exhibition requirements while sound post is beginning.</p>
+<p>The solution isn't to build every possible deliverable immediately.</p>
+<p>It's to organize the project in a way that preserves options.</p>
+<p>That means:</p>
+<ul>
+<li>retain the original production sound</li>
+<li>preserve multichannel source recordings</li>
+<li>keep effects separated when useful</li>
+<li>build enough independent backgrounds for surround</li>
+<li>maintain dialogue, music and effects stems</li>
+<li>keep clear picture-version records</li>
+<li>preserve the ability to reconform</li>
+<li>avoid unnecessary flattening of material</li>
+</ul>
+<p>A well-organized sound session makes future deliverables much easier.</p>
+<h2 id="the-festival-strategy-and-sound-post-strategy-should-support-each-other">The festival strategy and sound-post strategy should support each other</h2>
+<p>The most efficient workflow is usually not:</p>
+<p><strong>finish everything → submit → hope</strong></p>
+<p>and it's also not:</p>
+<p><strong>submit anything → worry about sound if accepted</strong></p>
+<p>A better approach is to understand the festival calendar and plan post around it.</p>
+<p>Maybe the submission deadline becomes the target for a strong stereo WIP.</p>
+<p>Maybe detailed Foley continues afterward.</p>
+<p>Maybe picture continues changing while dialogue editorial begins.</p>
+<p>Maybe the final surround mix happens once the filmmakers are truly done adjusting the cut.</p>
+<p>Those decisions can be made intelligently if everyone knows the plan.</p>
+<h2 id="at-bds-i-plan-for-both-the-submission-and-the-final-film">At BDS, I plan for both the submission and the final film</h2>
+<p>When I'm working on an independent feature with festival deadlines, I don't automatically treat the first submission file as the end of sound post.</p>
+<p>Sometimes the right strategy is to finish the entire soundtrack before submission.</p>
+<p>Other times it makes more sense to create a strong submission version and continue toward the final theatrical soundtrack afterward.</p>
+<p>If picture changes along the way, the sound session can be reconformed rather than rebuilt.</p>
+<p>If the eventual exhibition requires surround, the sound-effects edit can be built with that destination in mind from the beginning.</p>
+<p>The exact workflow depends on the film, the deadline and the festivals being targeted.</p>
+<p>The important thing is understanding that:</p>
+<p><strong>submission sound, final sound and exhibition deliverables are related stages of the same process—not necessarily the same file.</strong></p>
+<h2 id="the-short-version">The short version</h2>
+<p>If you're preparing an independent feature for festivals:</p>
+<p><strong>You may not need a finished 5.1 mix before submitting.</strong></p>
+<p>You do need a submission version that represents the film well.</p>
+<p>You need to understand whether the festival will allow updated cuts.</p>
+<p>And if the festival may ultimately require or strongly prefer surround exhibition, you should make sure the sound editorial you're doing now will support that final mix later.</p>
+<p>That way, getting selected creates a delivery deadline.</p>
+<p>Not a sound-post emergency.</p>
+
+          </div>
+          <aside class="article-related" aria-labelledby="related-title">
+            <h2 id="related-title">Related guides and services</h2>
+            <ul>
+              <li><a href="prepare-indie-feature-surround-sound-mix.html">How to prepare an indie feature for a surround mix</a></li>
+              <li><a href="what-to-send-sound-team-after-picture-lock.html">What to send your sound team after picture lock</a></li>
+              <li><a href="../audio-post-production-nyc.html">Audio post-production workflow</a></li>
+            </ul>
+          </aside>
+          <footer class="article-footer">
+            <p>Preparing a feature for festival submission? <a href="../contact.html">Get in touch</a>.</p>
+          </footer>
+        </article>
+      </main>
+    </div>
+    <script src="../js/navbar.js"></script>
+  </body>
+</html>
